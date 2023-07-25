@@ -32,8 +32,8 @@ class Operation(AbstractContextManager):
         # base props
         op.duration_ms = props[Constants.BASE_PROPS.DURATION_MS]
         op.exception_type = props[Constants.BASE_PROPS.EXCEPTION_TYPE]
-        op.exception_message = props[Constants.BASE_PROPS.EXCEPTION_MSG]
-        op.operation_id = meta_props[Constants.BASE_PROPS.ID]
+        op.exception_msg = props[Constants.BASE_PROPS.EXCEPTION_MSG]
+        op.id = meta_props[Constants.BASE_PROPS.ID]
 
         return op
 

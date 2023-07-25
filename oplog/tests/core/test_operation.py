@@ -4,7 +4,7 @@ from oplog.core.operation import Operation
 from oplog.tests.logged_test_case import LoggedTestCase, OpLogTestCase
 
 
-class OperationExceptionTest(BaseException):
+class OperationExceptionTest(Exception):
     pass
 
 
@@ -56,3 +56,14 @@ class TestOperation(OpLogTestCase):
         op = self.ops[0]
         self.assertIn(prop_bag_name, op.custom_props)
         self.assertEqual(op.custom_props[prop_bag_name], prop_bag)
+
+    def test_operation_failure_exceptionLogged(self):
+        with self.assertRaises(OperationExceptionTest):
+            with Operation(name="test_op") as op:
+                raise OperationExceptionTest("test exception")
+
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.ops[0]
+        self.assertEqual(op.exception_type, "OperationExceptionTest")
+        self.assertEqual(op.exception_msg, "test exception")
