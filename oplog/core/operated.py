@@ -1,6 +1,6 @@
 from functools import update_wrapper, wraps
 from typing import Optional
-from oplog.operation import Operation
+from oplog.core.operation import Operation
 
 
 class Operated:

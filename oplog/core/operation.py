@@ -8,9 +8,9 @@ import time
 import traceback
 from typing import Any, Dict, Optional
 import uuid
-from oplog.constants import Constants
+from oplog.core.constants import Constants
 
-from oplog.exceptions import OperationPropertyAlreadyExistsException
+from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 
 
 class Operation(AbstractContextManager):

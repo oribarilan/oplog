@@ -2,7 +2,7 @@ import logging
 from typing import List
 import unittest
 
-from oplog.operation import Operation
+from oplog.core.operation import Operation
 
 
 class ListLoggingHandler(logging.Handler):

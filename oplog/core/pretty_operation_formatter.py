@@ -1,6 +1,6 @@
 import logging
 
-from oplog.operation import Operation
+from oplog.core.operation import Operation
 
 
 class CustomFormatter(logging.Formatter):
