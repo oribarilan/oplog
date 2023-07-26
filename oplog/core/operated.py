@@ -5,10 +5,10 @@ from oplog.core.operation import Operation
 
 class Operated:
     def __init__(self, name: Optional[str] = None, suppress: bool = False):
-        """Creates an underlying operation.
+        """Creates an underlying operation. Refer to Operation for more details.
 
         Args:
-            name (Optional[str], optional): Name of the operation. If not given, the method name (and class) will be used.
+            name (Optional[str], optional): If not given, the method name (and class) will be used.
             suppress (bool, optional): Defaults to False.
         """
         self.name = name
@@ -26,7 +26,8 @@ class Operated:
                 except:
                     qualifier_name = func.__module__
 
-            op_name = f"{qualifier_name}.{function_name}"
+                op_name = f"{qualifier_name}.{function_name}"
+                
             with Operation(name=op_name, suppress=self.suppress):
                 result = func(*args, **kwargs)
 
