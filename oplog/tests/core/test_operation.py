@@ -1,4 +1,5 @@
 from parameterized import parameterized
+from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 from oplog.core.operation import Operation
 
 from oplog.tests.logged_test_case import LoggedTestCase, OpLogTestCase
@@ -67,3 +68,11 @@ class TestOperation(OpLogTestCase):
         op = self.ops[0]
         self.assertEqual(op.exception_type, "OperationExceptionTest")
         self.assertEqual(op.exception_msg, "test exception")
+
+    def test_operation_add_propertyExists_exceptionRaised(self):
+        prop_name = "test_custom_prop"
+
+        with self.assertRaises(OperationPropertyAlreadyExistsException):
+            with Operation(name="test_op") as op:
+                op.add(prop_name=prop_name, value=1)
+                op.add(prop_name=prop_name, value=2)

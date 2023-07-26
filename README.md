@@ -53,11 +53,16 @@ Give an example
 
 ### And coding style tests
 
-Explain what these tests test and why
+### Code Coverage
+
+Code coverage is enforced by `pytest-cov`. To run the tests and generate a coverage report, 
+run the following command from the root directory`:
 
 ```
-Give an example
+pytest --cov=oplog --cov-report=xml oplog/tests
 ```
+
+For VS Code, you can use [Coverage Gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters) to view the coverage report within the editor.
 
 ## Deployment
 
