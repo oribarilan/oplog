@@ -119,7 +119,7 @@ class Operation(AbstractContextManager):
             for prop_name in self._global_props:
                 self._encode_and_add_meta_prop(prop_name, self._global_props[prop_name])
 
-        serialized_msg = self._serialize()
+        serialized_msg = self.serialize()
         # perform quick & weak validation
         json.loads(serialized_msg)
 
@@ -141,14 +141,14 @@ class Operation(AbstractContextManager):
         self.meta_props[property_name] = encoded_value
 
     def _is_too_big(self) -> bool:
-        serialized_msg = self._serialize()
+        serialized_msg = self.serialize()
         # encode to utf-8 to get the size in bytes
         encoded_message = serialized_msg.encode("utf-8")
         message_kb = len(encoded_message) / 1024
         max_size_kb = 2
         return message_kb >= max_size_kb
 
-    def _serialize(self):
+    def serialize(self):
         props = self._get_property_bag()
         return json.dumps(props)
 

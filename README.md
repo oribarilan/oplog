@@ -1,13 +1,33 @@
 # oplog
 
-An operational logging library for Python. No more cumbersome logging statements. Just annotate your functions and let `oplog` do the rest.
+An operational logging library for Python. No more cumbersome logging statements. No more investigating logs with complex regex. Just annotate your functions and let `oplog` do the rest.
 
 ## 🚧 Work in Progress 
 `oplog` is currently in development. It is not ready for use. Come back soon!
 
 ## Examples
 
+```
+```
 
+## Concepts
+
+Logs are often a mess. They are hard to read and hard to understand. They are often not actionable nor useful. There is a lack of consistency between logs. This makes it hard to understand what is going on in a system.
+
+When investigating an issue, querying logs is often a pain. It is hard to find the relevant logs without being a regex master.
+
+`oplog` aims to solve these problems by providing a simple, consistent and structured way to log operations.
+
+Systems that use `oplog`, not only have a consistent way to log operations, but also have a consistent way to query them. This makes it to investigate issues, write alerts and build dashboards.
+
+### Specifics
+
+*Operation* is a unit of work that is performed. This is the smallest unit of work that can be logged. For example, a function call. Operations will automatically be logged when they are finished. Operations contain metadata (e.g. start time, end time, duration, etc.) as well as custom properties.
+
+This is done by adding the *Operation* to the `LogRecord`, then allowing the users to handle it in a logging `Handler` and/or `Formatter`.
+
+They can be printed nicely using a logging formatter (see `verbose_op_log_line_formatter.py` as an example).
+In production systems, it is recommended to serialize the operations to JSON (see method `serialize()`) and send them to a log aggregation service such as [AzureDataExplorer](https://dataexplorer.azure.com/), [Elasticsearch](https://www.elastic.co/products/elasticsearch) or [Splunk](https://www.splunk.com/).
 
 ## Getting Started WIP
 
