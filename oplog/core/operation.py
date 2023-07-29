@@ -123,7 +123,7 @@ class Operation(AbstractContextManager):
         # perform quick & weak validation
         json.loads(serialized_msg)
 
-        self.logger.log(level=level, msg=self._serialize())
+        self.logger.log(level=level, msg="operation logged", extra={"oplog": self})
         # self.logger.log(level=level, msg=self.pretty_print())
 
         # this will either suprress (if configured) or no, in case an error was thrown in context

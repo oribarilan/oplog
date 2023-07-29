@@ -11,9 +11,7 @@ class ListLoggingHandler(logging.Handler):
         self.logs = []
 
     def emit(self, record):
-        log_entry = self.format(record)
-        self.logs.append(log_entry)
-        print(log_entry)
+        self.logs.append(record)
 
 
 class LoggedTestCase(unittest.TestCase):
@@ -23,9 +21,6 @@ class LoggedTestCase(unittest.TestCase):
         logger = logging.getLogger()
         logger.setLevel(logging.DEBUG)
         self.handler = ListLoggingHandler()
-
-        formatter = logging.Formatter("%(message)s")
-        self.handler.setFormatter(formatter)
         self.handler.logs = []
 
         logger.addHandler(self.handler)
@@ -37,4 +32,4 @@ class LoggedTestCase(unittest.TestCase):
 class OpLogTestCase(LoggedTestCase):
     @property
     def ops(self) -> List[Operation]:
-        return [Operation.deserialize(log) for log in self.handler.logs]
+        return [log.oplog for log in self.handler.logs]

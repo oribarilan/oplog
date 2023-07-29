@@ -7,6 +7,8 @@ from fastapi import FastAPI
 import os
 import sys
 
+import uvicorn
+
 
 # Get the parent directory of the current file (project_demo folder)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -19,10 +21,23 @@ sys.path.append(repository_root)
 
 from oplog.core.operated import Operated
 from oplog.core.operation import Operation
+from oplog.formatters.verbose_op_log_line_formatter import VerboseOpLogLineFormatter
+from oplog.core.operation_logger import OperationLogFilter
 
-
-logging.basicConfig(level=logging.DEBUG, format="%(message)s")
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+stream_handler = logging.StreamHandler()
+stream_handler.addFilter(OperationLogFilter())
+stream_handler.setFormatter(VerboseOpLogLineFormatter())
+logger.addHandler(stream_handler)
+logger.addHandler(logging.StreamHandler())
+logger.info("test")
+
+# oplog_stream_handler = OpLogStreamHandler(formatter=VerboseOpLogLineFormatter())
+# logger.addHandler(oplog_stream_handler)
+
+# oplog_file_handler = OpLogFileHandler(filename="oplog.log")
+# logger.addHandler(oplog_file_handler)
 
 
 app = FastAPI()
@@ -37,3 +52,7 @@ async def read_root():
 async def read_item(item_id: int, q: Union[str, None] = None):
     with Operation("read_item") as op:
         return {"item_id": item_id, "q": q}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
