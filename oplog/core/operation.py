@@ -1,4 +1,5 @@
 from contextlib import AbstractContextManager
+import contextvars
 import datetime
 import inspect
 import json
@@ -13,8 +14,13 @@ from oplog.core.constants import Constants
 from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 
 
+active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])
+
+
 class Operation(AbstractContextManager):
     # TODO Add support for global props
+    # TODO move meta props to the root level
+    # TODO add user support to extend inheritable props
     _global_props: Optional[Dict[str, str]] = None
 
     @staticmethod
@@ -51,6 +57,12 @@ class Operation(AbstractContextManager):
         self.exception_type: Optional[str] = None
         self.exception_msg: Optional[str] = None
 
+        self.parent_op: Optional[Operation] = None
+        self.child_ops: Optional[Operation] = []
+
+        # inheritable props
+        self.correlation_id: Optional[str] = None
+
         self.logger = self._get_caller_logger()
 
         # not logged, used to measure duration-ms
@@ -77,12 +89,34 @@ class Operation(AbstractContextManager):
     def __enter__(self) -> "Operation":
         self.start_time_utc = datetime.datetime.utcnow()
         self.perf_start = time.perf_counter_ns()
+
+        # Check if there's an active operation and assign parent-child relationship
+        if active_operation_stack.get() and active_operation_stack.get()[-1]:
+            self.parent_op = active_operation_stack.get()[-1]
+            self.parent_op.child_ops.append(self)
+        self.set_inheritable_props()
+
+        # Push the current operation onto the stack
+        active_operation_stack.set(active_operation_stack.get([]) + [self])
+
         return self
+
+    def set_inheritable_props(self) -> None:
+        if self.parent_op is not None:
+            self.correlation_id = self.parent_op.correlation_id
+        else:
+            self.correlation_id = str(uuid.uuid4())
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.end_time_utc = datetime.datetime.utcnow()
         perf_end = time.perf_counter_ns()
         self.duration_ms = round((perf_end - self.perf_start) / 1_000_000)
+
+        # Pop the current operation off the stack
+        current_stack = active_operation_stack.get([])
+        if current_stack:
+            current_stack.pop()
+            active_operation_stack.set(current_stack)
 
         # time format example: 2023-06-22 06:27:53.922633
         self._encode_and_add_meta_prop(
@@ -157,7 +191,7 @@ class Operation(AbstractContextManager):
 
     def __eq__(self, other):
         if isinstance(other, Operation):
-            return other.op_id == self.op_id
+            return other.id == self.id
         return False
 
     def _get_main_props(self) -> Dict[str, Any]:

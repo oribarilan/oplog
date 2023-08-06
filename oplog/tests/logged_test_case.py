@@ -33,3 +33,9 @@ class OpLogTestCase(LoggedTestCase):
     @property
     def ops(self) -> List[Operation]:
         return [log.oplog for log in self.handler.logs]
+
+    def get_op(self, name: str) -> Operation:
+        for op in self.ops:
+            if op.name == name:
+                return op
+        raise LookupError(f"Operation with name {name} not found")

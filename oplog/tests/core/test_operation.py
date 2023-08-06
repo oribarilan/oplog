@@ -34,7 +34,7 @@ class TestOperation(OpLogTestCase):
 
         self.assertEqual(len(self.ops), 1)
 
-        op = self.ops[0]
+        op = self.get_op("test_op")
         self.assertIn(prop_name, op.custom_props)
         self.assertEqual(op.custom_props[prop_name], prop_value)
 
@@ -54,7 +54,7 @@ class TestOperation(OpLogTestCase):
 
         self.assertEqual(len(self.ops), 1)
 
-        op = self.ops[0]
+        op = self.get_op("test_op")
         self.assertIn(prop_bag_name, op.custom_props)
         self.assertEqual(op.custom_props[prop_bag_name], prop_bag)
 
@@ -65,7 +65,7 @@ class TestOperation(OpLogTestCase):
 
         self.assertEqual(len(self.ops), 1)
 
-        op = self.ops[0]
+        op = self.get_op("test_op")
         self.assertEqual(op.exception_type, "OperationExceptionTest")
         self.assertEqual(op.exception_msg, "test exception")
 
@@ -76,3 +76,40 @@ class TestOperation(OpLogTestCase):
             with Operation(name="test_op") as op:
                 op.add(prop_name=prop_name, value=1)
                 op.add(prop_name=prop_name, value=2)
+
+    def test_operation_parentOperation_parentAndChildrenSet(self):
+        with Operation(name="parent_op"):
+            with Operation(name="child_op1"):
+                pass
+
+            with Operation(name="child_op2"):
+                pass
+
+        self.assertEqual(len(self.ops), 3)
+
+        child_op1 = self.get_op("child_op1")
+        child_op2 = self.get_op("child_op2")
+        parent_op = self.get_op("parent_op")
+
+        self.assertEqual(child_op1.parent_op, parent_op)
+        self.assertEqual(child_op2.parent_op, parent_op)
+
+        self.assertIn(child_op1, parent_op.child_ops)
+        self.assertIn(child_op2, parent_op.child_ops)
+    
+    def test_operation_correlationId_correlationIdSet(self):
+        with Operation(name="parent_op"):
+            with Operation(name="child_op1"):
+                pass
+
+            with Operation(name="child_op2"):
+                pass
+
+        self.assertEqual(len(self.ops), 3)
+        
+        child_op1 = self.get_op("child_op1")
+        child_op2 = self.get_op("child_op2")
+        parent_op = self.get_op("parent_op")
+
+        self.assertEqual(child_op1.correlation_id, parent_op.correlation_id)
+        self.assertEqual(child_op2.correlation_id, parent_op.correlation_id)
