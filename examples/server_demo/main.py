@@ -22,7 +22,7 @@ sys.path.append(repository_root)
 from oplog.core.operated import Operated
 from oplog.core.operation import Operation
 from oplog.formatters.verbose_op_log_line_formatter import VerboseOpLogLineFormatter
-from oplog.core.operation_logger import OperationLogFilter
+from oplog.core.operation_log_filter import OperationLogFilter
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

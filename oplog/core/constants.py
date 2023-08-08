@@ -10,5 +10,6 @@ class Constants:
         RESULT = "result"
         EXCEPTION_TYPE = "exception_type"
         EXCEPTION_MSG = "exception_msg"
+        CORRELATION_ID = "correlation_id"
 
         LEVEL = "log_level"
