@@ -88,6 +88,14 @@ For VS Code, you can use [Coverage Gutters](https://marketplace.visualstudio.com
 
 Add additional notes about how to deploy this on a live system
 
+## Documentation
+
+Using mkdocs with mkdocs-material theme. To run the docs locally, run the following command from the root directory:
+
+```
+mkdocs serve
+```
+
 ## Built With
 
 * [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
