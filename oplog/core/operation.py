@@ -5,6 +5,7 @@ import inspect
 import json
 import logging
 import multiprocessing
+import threading
 import time
 import traceback
 from typing import Any, Dict, Optional
@@ -19,34 +20,12 @@ active_operation_stack = contextvars.ContextVar("active_operation_stack", defaul
 
 class Operation(AbstractContextManager):
     # TODO Add support for global props
-    # TODO move meta props to the root level
     # TODO add user support to extend inheritable props
     _global_props: Optional[Dict[str, str]] = None
-
-    @staticmethod
-    def deserialize(op_s: str) -> "Operation":
-        props = json.loads(op_s)
-        meta_props = props[Constants.META_PROPS]
-        custom_props = props[Constants.CUSTOM_PROPS]
-        op = Operation(
-            name=props[Constants.BASE_PROPS.NAME],
-            suppress=meta_props[Constants.BASE_PROPS.SUPPRESS_CONFIGURED],
-        )
-        op.meta_props = meta_props
-        op.custom_props = custom_props
-
-        # base props
-        op.duration_ms = props[Constants.BASE_PROPS.DURATION_MS]
-        op.exception_type = props[Constants.BASE_PROPS.EXCEPTION_TYPE]
-        op.exception_msg = props[Constants.BASE_PROPS.EXCEPTION_MSG]
-        op.id = meta_props[Constants.BASE_PROPS.ID]
-
-        return op
 
     def __init__(self, name: str, suppress: bool = False) -> None:
         self.name = name
         self.suppress = suppress
-        self.meta_props: Dict[str, Any] = dict()
         self.custom_props: Dict[str, Any] = dict()
 
         self.start_time_utc: Optional[datetime.datetime] = None
@@ -60,13 +39,19 @@ class Operation(AbstractContextManager):
         self.parent_op: Optional[Operation] = None
         self.child_ops: Optional[Operation] = []
 
+        self._logger = self._get_caller_logger()
+        self.logger_name = self._logger.name
+
+        current_proc = multiprocessing.current_process()
+        self.process_name = current_proc.name
+        self.process_id = current_proc.pid
+        self.thread_name = threading.current_thread().name
+        self.thread_id = threading.get_ident()
+
         # inheritable props
         self.correlation_id: Optional[str] = None
 
-        self.logger = self._get_caller_logger()
-
-        # not logged, used to measure duration-ms
-        self.perf_start: Optional[float] = None
+        self._perf_start: Optional[float] = None
 
     @classmethod
     def _get_caller_logger(cls) -> logging.Logger:
@@ -81,14 +66,16 @@ class Operation(AbstractContextManager):
                 if caller_module is not None:
                     logger = logging.getLogger(caller_module.__name__)
 
-        # safety measure - should not happen
+        # safety measure
         if logger is None:
             return logging.getLogger()
         return logger
 
     def __enter__(self) -> "Operation":
-        self.start_time_utc = datetime.datetime.utcnow()
-        self.perf_start = time.perf_counter_ns()
+        self._start_time_utc = datetime.datetime.utcnow()
+        # time format example: 2023-06-22 06:27:53.922633
+        self.start_time_utc = self._start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
+        self._perf_start = time.perf_counter_ns()
 
         # Check if there's an active operation and assign parent-child relationship
         if active_operation_stack.get() and active_operation_stack.get()[-1]:
@@ -110,18 +97,13 @@ class Operation(AbstractContextManager):
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.end_time_utc = datetime.datetime.utcnow()
         perf_end = time.perf_counter_ns()
-        self.duration_ms = round((perf_end - self.perf_start) / 1_000_000)
+        self.duration_ms = round((perf_end - self._perf_start) / 1_000_000)
 
         # Pop the current operation off the stack
         current_stack = active_operation_stack.get([])
         if current_stack:
             current_stack.pop()
             active_operation_stack.set(current_stack)
-
-        # time format example: 2023-06-22 06:27:53.922633
-        self._encode_and_add_meta_prop(
-            "start_time_utc", self.start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
-        )
 
         is_success = exc_type is None
         if is_success:
@@ -134,45 +116,14 @@ class Operation(AbstractContextManager):
             tb = traceback.extract_tb(exc_tb, limit=10).format()
 
         self.result = result
-        self._encode_and_add_meta_prop(Constants.BASE_PROPS.ID, self.id)
-        self._encode_and_add_meta_prop(
-            Constants.BASE_PROPS.SUPPRESS_CONFIGURED, self.suppress
-        )
-        self._encode_and_add_meta_prop("traceback", tb)
-        self._encode_and_add_meta_prop("logger_name", self.logger.name)
+        self.traceback = tb
         level = logging.INFO if is_success else logging.ERROR
-        self._encode_and_add_meta_prop(
-            Constants.BASE_PROPS.LEVEL, logging.getLevelName(level)
-        )
+        self.log_level = logging.getLevelName(level)
 
-        current_proc = multiprocessing.current_process()
-        self._encode_and_add_meta_prop("process_name", current_proc.name)
-        self._encode_and_add_meta_prop("process_id", current_proc.pid)
-
-        if self._global_props is not None:
-            for prop_name in self._global_props:
-                self._encode_and_add_meta_prop(prop_name, self._global_props[prop_name])
-
-        serialized_msg = self.serialize()
-        # perform quick & weak validation
-        json.loads(serialized_msg)
-
-        self.logger.log(level=level, msg="operation logged", extra={"oplog": self})
-        # self.logger.log(level=level, msg=self.pretty_print())
+        self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
 
         # this will either suprress (if configured) or no, in case an error was thrown in context
         return self.suppress
-
-    def _encode_and_add_meta_prop(self, property_name: str, value: Any) -> None:
-        # encode here in case the value is complex, like ndarray etc.
-        self._add_meta_prop(property_name=property_name, encoded_value=value)
-
-    def _add_meta_prop(self, property_name: str, encoded_value: Any) -> None:
-        if property_name in self.meta_props:
-            raise OperationPropertyAlreadyExistsException(
-                op_name=self.name, prop_name=property_name
-            )
-        self.meta_props[property_name] = encoded_value
 
     def _is_too_big(self) -> bool:
         serialized_msg = self.serialize()
