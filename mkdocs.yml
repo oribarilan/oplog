@@ -3,10 +3,17 @@ site_url: https://google.com
 theme:
   name: material
   features:
-    - navigation.tabs
+    - pymdownx.highlight:
+        anchor_linenums: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - admonition
+    - footnotes
+    - pymdownx.details
+    - pymdownx.superfences
+    - pymdownx.mark
     - navigation.sections
-    - toc.integrate
-    - navigation.top
+    - navigation.instant
     - search.suggest
     - search.highlight
     - content.tabs.link

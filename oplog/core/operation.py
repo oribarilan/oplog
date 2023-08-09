@@ -19,7 +19,6 @@ active_operation_stack = contextvars.ContextVar("active_operation_stack", defaul
 
 
 class Operation(AbstractContextManager):
-    # TODO Add support for global props
     # TODO add user support to extend inheritable props
     # TODO support async
     _global_props: Optional[Dict[str, Any]] = {}

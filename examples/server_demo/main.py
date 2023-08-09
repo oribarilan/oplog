@@ -24,35 +24,16 @@ from oplog.core.operation import Operation
 from oplog.formatters.verbose_op_log_line_formatter import VerboseOpLogLineFormatter
 from oplog.core.operation_log_filter import OperationLogFilter
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-stream_handler = logging.StreamHandler()
-stream_handler.addFilter(OperationLogFilter())
-stream_handler.setFormatter(VerboseOpLogLineFormatter())
-logger.addHandler(stream_handler)
-logger.addHandler(logging.StreamHandler())
-logger.info("test")
-
-# oplog_stream_handler = OpLogStreamHandler(formatter=VerboseOpLogLineFormatter())
-# logger.addHandler(oplog_stream_handler)
-
-# oplog_file_handler = OpLogFileHandler(filename="oplog.log")
-# logger.addHandler(oplog_file_handler)
-
+logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
+logging.getLogger().handlers[0].setFormatter(VerboseOpLogLineFormatter())
 
 app = FastAPI()
 
 
 @app.get("/")
 async def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: Union[str, None] = None):
-    with Operation("read_item") as op:
-        return {"item_id": item_id, "q": q}
-
+    with Operation("read_root") as op:
+        return {"Hello": "World"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

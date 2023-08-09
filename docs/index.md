@@ -1,8 +1,24 @@
-# Welcome to MkDocs
+# Welcome to oplog
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+## TODOs code
 
-## TODOs
+### Must haves
+
+0. Add custom props section to docs
+1. Add meta props section to docs
+2. Operation async
+3. Operated async
+
+### Nice haves
+1. Support custom inheritors
+
+### Docs
+
+1. Top navigation to use sections, Side navigations to show pages within a section - like in https://squidfunk.github.io/mkdocs-material/getting-started/
+2. Getting Started
+3. Refer to FastAPI for docs
+
+## TODOs aesthetics
 
 1. logos and icons
 [docs](https://squidfunk.github.io/mkdocs-material/setup/changing-the-logo-and-icons/#configuration)
