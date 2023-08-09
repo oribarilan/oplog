@@ -1,3 +1,6 @@
+import inspect
+import logging
+from unittest.mock import Mock, patch
 from parameterized import parameterized
 from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 from oplog.core.operation import Operation
@@ -10,6 +13,26 @@ class OperationExceptionTest(Exception):
 
 
 class TestOperation(OpLogTestCase):
+    def test_operation_loggerLogCalled(self):
+        with patch.object(logging.Logger, logging.Logger.log.__name__, return_value=None) as mock_log:
+            with Operation(name="test_op") as op:
+                pass
+
+        mock_log.assert_called_once_with(
+            level=logging.getLevelName(op.log_level),
+            msg="operation logged",
+            extra={"oplog": op},
+        )
+        
+    def test_operation_loggerIsOfTheCaller(self):
+        expected_logger = logging.getLogger(inspect.getmodule(TestOperation).__name__)
+        
+        with Operation(name="test_op") as op:
+                pass
+        
+        actual_logger = op._logger
+        self.assertEqual(expected_logger, actual_logger)
+
     def test_operation_contextManagerLogged(self):
         with Operation(name="test_op") as op:
             pass
@@ -37,7 +60,7 @@ class TestOperation(OpLogTestCase):
         op = self.get_op("test_op")
         self.assertIn(prop_name, op.custom_props)
         self.assertEqual(op.custom_props[prop_name], prop_value)
-        
+
     def test_addGlobal_customPropAdded(self):
         prop_name = "test_global_prop"
         prop_value = 1
