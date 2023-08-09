@@ -39,3 +39,7 @@ class OpLogTestCase(LoggedTestCase):
             if op.name == name:
                 return op
         raise LookupError(f"Operation with name {name} not found")
+
+    def tearDown(self):
+        Operation.factory_reset()
+        return super().tearDown()

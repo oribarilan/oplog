@@ -25,7 +25,7 @@ class TestOperation(OpLogTestCase):
             ("String type", "1"),
         ]
     )
-    def test_operation_add_customPropAdded(self, name, value):
+    def test_add_customPropAdded(self, name, value):
         prop_name = "test_custom_prop"
         prop_value = value
 
@@ -37,8 +37,43 @@ class TestOperation(OpLogTestCase):
         op = self.get_op("test_op")
         self.assertIn(prop_name, op.custom_props)
         self.assertEqual(op.custom_props[prop_name], prop_value)
+        
+    def test_addGlobal_customPropAdded(self):
+        prop_name = "test_global_prop"
+        prop_value = 1
+        Operation.add_global(prop_name=prop_name, value=prop_value)
 
-    def test_operation_addDict_customPropsAdded(self):
+        with Operation(name="test_op") as op:
+            op.add(prop_name=prop_name, value=prop_value)
+
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.get_op("test_op")
+        self.assertIn(prop_name, op._global_props)
+        self.assertEqual(op._global_props[prop_name], prop_value)
+
+    def test_operation_add_valueIsDict_customPropsAdded(self):
+        prop_name_1 = "test_custom_prop_1"
+        prop_name_2 = "test_custom_prop_2"
+        prop_value_1 = 1
+        prop_value_2 = 2
+        prop_bag = {
+            prop_name_1: prop_value_1,
+            prop_name_2: prop_value_2,
+        }
+
+        with Operation(name="test_op") as op:
+            op.add_multi(bag=prop_bag)
+
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.get_op("test_op")
+        self.assertIn(prop_name_1, op.custom_props)
+        self.assertEqual(op.custom_props[prop_name_1], prop_value_1)
+        self.assertIn(prop_name_2, op.custom_props)
+        self.assertEqual(op.custom_props[prop_name_2], prop_value_2)
+
+    def test_operation_addMulti_customPropsAdded(self):
         prop_name_1 = "test_custom_prop_1"
         prop_name_2 = "test_custom_prop_2"
         prop_value_1 = 1
@@ -50,7 +85,7 @@ class TestOperation(OpLogTestCase):
         prop_bag_name = "test_bag"
 
         with Operation(name="test_op") as op:
-            op.add_bag(bag_prop_name=prop_bag_name, bag=prop_bag)
+            op.add(prop_name=prop_bag_name, value=prop_bag)
 
         self.assertEqual(len(self.ops), 1)
 
@@ -96,7 +131,7 @@ class TestOperation(OpLogTestCase):
 
         self.assertIn(child_op1, parent_op.child_ops)
         self.assertIn(child_op2, parent_op.child_ops)
-    
+
     def test_operation_correlationId_correlationIdSet(self):
         with Operation(name="parent_op"):
             with Operation(name="child_op1"):
@@ -106,7 +141,7 @@ class TestOperation(OpLogTestCase):
                 pass
 
         self.assertEqual(len(self.ops), 3)
-        
+
         child_op1 = self.get_op("child_op1")
         child_op2 = self.get_op("child_op2")
         parent_op = self.get_op("parent_op")

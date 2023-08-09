@@ -8,7 +8,7 @@ import multiprocessing
 import threading
 import time
 import traceback
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, Optional, Type
 import uuid
 from oplog.core.constants import Constants
 
@@ -21,7 +21,7 @@ active_operation_stack = contextvars.ContextVar("active_operation_stack", defaul
 class Operation(AbstractContextManager):
     # TODO Add support for global props
     # TODO add user support to extend inheritable props
-    _global_props: Optional[Dict[str, str]] = None
+    _global_props: Optional[Dict[str, Any]] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
         self.name = name
@@ -52,6 +52,10 @@ class Operation(AbstractContextManager):
         self.correlation_id: Optional[str] = None
 
         self._perf_start: Optional[float] = None
+
+    @classmethod
+    def factory_reset(cls) -> None:
+        cls._global_props = {}
 
     @classmethod
     def _get_caller_logger(cls) -> logging.Logger:
@@ -164,33 +168,35 @@ class Operation(AbstractContextManager):
         return props
 
     def add(self, prop_name: str, value: Any) -> None:
-        if isinstance(value, Dict):
-            raise TypeError(
-                f"type {type(value)} is not supported for `{self.add.__name__}`. "
-                f"Consider using `{self.add_multi.__name__}` or `{self.add_bag.__name__}`."
-            )
+        self._add_custom_prop(property_name=prop_name, value=value)
 
-        self._encode_and_add_custom_prop(property_name=prop_name, value=value)
+    @classmethod
+    def add_global(cls, prop_name: str, value: Any) -> None:
+        cls._validate_type(value=value, expected_types=(str, int, float, bool))
+        cls._add_global_prop(property_name=prop_name, value=value)
 
-    def add_bag(self, bag_prop_name: str, bag: Dict[str, Any]) -> None:
-        # Adds a dictionary as a property
-        encoded_bag = dict()
+    @staticmethod
+    def _validate_type(value: Any, expected_types: Iterable[Type]):
+        if not any(isinstance(value, t) for t in expected_types):
+            expected_types_str = " or ".join(str(t) for t in expected_types)
+            raise TypeError(f"Expected {expected_types_str}, but got {type(value)}")
+
+    def add_multi(self, bag: Dict[str, Any]) -> None:
         for prop_name in bag:
-            encoded_prop_name = prop_name
-            encoded_bag[encoded_prop_name] = bag[encoded_prop_name]
+            self.add(prop_name=prop_name, value=bag[prop_name])
 
-        self._add_custom_prop(property_name=bag_prop_name, encoded_value=encoded_bag)
-
-    def _encode_and_add_custom_prop(self, property_name: str, value: Any) -> None:
-        encoded_value = value
-        self._add_custom_prop(property_name=property_name, encoded_value=encoded_value)
-
-    def _add_custom_prop(self, property_name: str, encoded_value: Any) -> None:
+    def _add_custom_prop(self, property_name: str, value: Any) -> None:
         if property_name in self.custom_props:
             raise OperationPropertyAlreadyExistsException(
                 op_name=self.name, prop_name=property_name
             )
-        self.custom_props[property_name] = encoded_value
+        self.custom_props[property_name] = value
+
+    @classmethod
+    def _add_global_prop(cls, property_name: str, value: Any) -> None:
+        if property_name in cls._global_props:
+            raise OperationPropertyAlreadyExistsException(prop_name=property_name)
+        cls._global_props[property_name] = value
 
     def pretty_print(self) -> str:
         pretty_string = f"{self.end_time_utc} [{self.meta_props[Constants.BASE_PROPS.LEVEL]}] - [{self.name}] {self.result}. Custom props: {self.custom_props}"
