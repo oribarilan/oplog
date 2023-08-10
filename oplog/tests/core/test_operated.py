@@ -1,3 +1,6 @@
+import asyncio
+import pytest
+
 from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 from oplog.core.operated import Operated
 from oplog.core.operation import Operation
@@ -7,21 +10,30 @@ from oplog.tests.logged_test_case import OpLogTestCase
 
 class OperatedTestClass:
     @Operated()
-    def operated_method(self):
+    def operated_method_without_name(self):
         pass
     
     @Operated("test_op")
-    def operated_named_method(self):
+    def operated_method(self):
         pass
     
     @staticmethod
-    @Operated("test_op2")
-    def operated_named_static_method():
+    @Operated("test_op_static")
+    def operated_static_method():
         pass
 
 class TestOperated(OpLogTestCase):
     # TODO the correct testing would be to mock Operation and to make sure the constructor is called with the correct arguments
     
+    def test_operated_withoutName_underlyingOperationCreated(self):
+        otc = OperatedTestClass()
+        otc.operated_method_without_name()
+        
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.ops[0]
+        self.assertEqual(op.name, "OperatedTestClass.operated_method_without_name")
+
     def test_operated_vanilla_underlyingOperationCreated(self):
         otc = OperatedTestClass()
         otc.operated_method()
@@ -29,22 +41,13 @@ class TestOperated(OpLogTestCase):
         self.assertEqual(len(self.ops), 1)
 
         op = self.ops[0]
-        self.assertEqual(op.name, "OperatedTestClass.operated_method")
-
-    def test_operated_namedOp_underlyingOperationCreated(self):
-        otc = OperatedTestClass()
-        otc.operated_named_method()
-        
-        self.assertEqual(len(self.ops), 1)
-
-        op = self.ops[0]
         self.assertEqual(op.name, "test_op")
     
-    def test_operated_namedOpWithStaticMethod_underlyingOperationCreated(self):
+    def test_operated_staticMethod_underlyingOperationCreated(self):
         otc = OperatedTestClass()
-        otc.operated_named_static_method()
+        otc.operated_static_method()
         
         self.assertEqual(len(self.ops), 1)
 
         op = self.ops[0]
-        self.assertEqual(op.name, "test_op2")
+        self.assertEqual(op.name, "test_op_static")

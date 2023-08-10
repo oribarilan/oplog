@@ -4,10 +4,10 @@
 
 ### Must haves
 
-0. Add custom props section to docs
-1. Add meta props section to docs
-2. Operation async
-3. Operated async
+0. test correlation ID works as expected when operation children are created in different threads.
+4. Timeouts (async only or for sync as well?)
+- https://stackoverflow.com/questions/45426713/how-to-gracefully-timeout-with-asyncio
+- https://stackoverflow.com/questions/492519/timeout-on-a-function-call
 
 ### Nice haves
 1. Support custom inheritors
