@@ -24,8 +24,10 @@ from oplog.core.operation import Operation
 from oplog.formatters.verbose_op_log_line_formatter import VerboseOpLogLineFormatter
 from oplog.core.operation_log_filter import OperationLogFilter
 
-logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
-logging.getLogger().handlers[0].setFormatter(VerboseOpLogLineFormatter())
+stream_op_handler = logging.StreamHandler()
+stream_op_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
+stream_op_handler.setFormatter(VerboseOpLogLineFormatter()) # <-- Example on how to use a custom formatter
+logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 
 app = FastAPI()
 

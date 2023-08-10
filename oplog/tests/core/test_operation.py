@@ -116,10 +116,47 @@ class TestOperation(OpLogTestCase):
         self.assertIn(prop_bag_name, op.custom_props)
         self.assertEqual(op.custom_props[prop_bag_name], prop_bag)
 
-    def test_operation_failure_exceptionLogged(self):
+    def test_operation_exceptionThrownWitoutHandling_failedOperationLoggedExceptionReraised(self):
         with self.assertRaises(OperationExceptionTest):
             with Operation(name="test_op") as op:
                 raise OperationExceptionTest("test exception")
+
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.get_op("test_op")
+        self.assertEqual(op.exception_type, "OperationExceptionTest")
+        self.assertEqual(op.exception_msg, "test exception")
+    
+    def test_operation_exceptionThrownWitoutSuppression_failedOperationLoggedExceptionReraised(self):
+        with self.assertRaises(OperationExceptionTest):
+            with Operation(name="test_op", suppress=False) as op:
+                raise OperationExceptionTest("test exception")
+
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.get_op("test_op")
+        self.assertEqual(op.exception_type, "OperationExceptionTest")
+        self.assertEqual(op.exception_msg, "test exception")
+
+    def test_operation_exceptionThrownWithSuppression_failedOperationLoggedFlowContinues(self):
+        try:
+            with Operation(name="test_op", suppress=True) as op:
+                # obvious if to help IDE with "unreachable code"
+                if (1 == 1):
+                    raise OperationExceptionTest("test exception")
+        except OperationExceptionTest:
+            # test would work without this, but this is here to make test intentional and explicit
+            self.fail("exception should have been suppressed")
+
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.get_op("test_op")
+        self.assertEqual(op.exception_type, "OperationExceptionTest")
+        self.assertEqual(op.exception_msg, "test exception")
+        
+    def test_operation_failureWithSuppression_exceptionLogged(self):
+        with Operation(name="test_op", suppress=True) as op:
+            raise OperationExceptionTest("test exception")
 
         self.assertEqual(len(self.ops), 1)
 

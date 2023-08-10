@@ -1,45 +1,16 @@
 # Welcome to oplog
 
-## TODOs code
+## What is oplog?
 
-### Must haves
+oplog is a modern logging library for Python application.
+oplog offers a different paradigm for logging, which is based on the concept of logging operations.
+Instead of creating a "log-book", which is a long scroll of text messages, oplog is about logging operations with rich data.
 
-0. test correlation ID works as expected when operation children are created in different threads.
-4. Timeouts (async only or for sync as well?)
-- https://stackoverflow.com/questions/45426713/how-to-gracefully-timeout-with-asyncio
-- https://stackoverflow.com/questions/492519/timeout-on-a-function-call
+## Key features:
 
-### Nice haves
-1. Support custom inheritors
-
-### Docs
-
-1. Top navigation to use sections, Side navigations to show pages within a section - like in https://squidfunk.github.io/mkdocs-material/getting-started/
-2. Getting Started
-3. Refer to FastAPI for docs
-
-## TODOs aesthetics
-
-1. logos and icons
-[docs](https://squidfunk.github.io/mkdocs-material/setup/changing-the-logo-and-icons/#configuration)
-    - logo
-    - favicon
-
-2. add git repo
-[docs](https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/#adding-a-git-repository)
-
-3. publish to github pages [video](https://youtu.be/Q-YA_dA8C20?t=839)
-
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+1. **Object Oriented**: Intuitive API, easy to use and extend.
+2. **Modern & Scalable**: Unlike log message, oplog is scaleable. Ingesting oplogs to a columnar database allows you to query, analyze and monitor your app in a modern and performant way.
+3. **Standardized**: No more mess and inconsistency across your logs. oplog creates a standard for how logs should be written across your code base.
+4. **Production Ready**: Easily create dashboards and monitors on top of logged data.
+5. **Lightweight**: oplog is a layer on top of the standard Python logging library. It is easy to integrate and use.
+6. **Minimal**: While oplog is rich with metadata, you only log what you need. Creating smaller and more efficient logs.
