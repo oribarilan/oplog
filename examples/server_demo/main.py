@@ -16,17 +16,16 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 
 # Add the repository root directory to the Python path
-print("Adding repository root to Python path: {}".format(repository_root))
 sys.path.append(repository_root)
 
 from oplog.core.operated import Operated
 from oplog.core.operation import Operation
-from oplog.formatters.verbose_op_log_line_formatter import VerboseOpLogLineFormatter
+from oplog.formatters.verbose_oplog_line_formatter import VerboseOplogLineFormatter
 from oplog.core.operation_log_filter import OperationLogFilter
 
 stream_op_handler = logging.StreamHandler()
 stream_op_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
-stream_op_handler.setFormatter(VerboseOpLogLineFormatter()) # <-- Example on how to use a custom formatter
+stream_op_handler.setFormatter(VerboseOplogLineFormatter()) # <-- Example on how to use a custom formatter
 logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 
 app = FastAPI()

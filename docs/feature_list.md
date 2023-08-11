@@ -2,10 +2,11 @@
 
 ### Must haves
 
-0. test correlation ID works as expected when operation children are created in different threads.
-4. Timeouts (async only or for sync as well?)
-- https://stackoverflow.com/questions/45426713/how-to-gracefully-timeout-with-asyncio
-- https://stackoverflow.com/questions/492519/timeout-on-a-function-call
+1. Timeouts (async only or for sync as well?)
+    - https://stackoverflow.com/questions/45426713/how-to-gracefully-timeout-with-asyncio
+    - https://stackoverflow.com/questions/492519/timeout-on-a-function-call
+2. Add CSV formatter
+3. revisit the timing mechanism (performance timer vs clock timer)
 
 ### Nice haves
 1. Support custom inheritors
@@ -15,6 +16,7 @@
 1. Top navigation to use sections, Side navigations to show pages within a section - like in https://squidfunk.github.io/mkdocs-material/getting-started/
 2. Getting Started
 3. Refer to FastAPI for docs
+4. API reference
 
 ## TODOs aesthetics
 

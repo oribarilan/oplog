@@ -8,10 +8,10 @@ sys.path.append(repository_root)
 import logging
 from oplog.core.operation import Operation
 from oplog.core.operated import Operated
-from oplog.formatters.verbose_op_log_line_formatter import VerboseOpLogLineFormatter
+from oplog.formatters.verbose_oplog_line_formatter import VerboseOplogLineFormatter
 
 logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler()])
-logging.getLogger().handlers[0].setFormatter(VerboseOpLogLineFormatter())
+logging.getLogger().handlers[0].setFormatter(VerboseOplogLineFormatter())
 
 Operation.add_global('project_version', '1.3.0')
 Operation.add_global('build_version', '20230120_001')

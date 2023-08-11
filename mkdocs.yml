@@ -2,7 +2,8 @@ site_name: oplog
 site_url: https://google.com
 theme:
   name: material
-  favicon: assets/favicon.png
+  favicon: assets/favicon_round2.png
+  logo: assets/logo.png
   features:
     - pymdownx.highlight:
         anchor_linenums: true

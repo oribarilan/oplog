@@ -1,5 +1,7 @@
 # Contribution
 
+🚧 Work in progress. Please come back later. 🚧
+
 ## Documentation
 
 Our documentation uses [MkDocs](https://www.mkdocs.org/) and the [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/) theme.

@@ -9,9 +9,9 @@ They are managed and added automatically to every operation, and do not require 
 
 When investigating issues, developers find themselves having to correlate between different operations. For example, when a user reports a bug, the developer will have to find the relevant log messages, and then correlate between them to understand the flow of the operation. This is where `correlation_id` comes into play.
 
-`correlation_id` is a special kind of meta property that is inherited by child operations from their parent operation. It can be used to correlate between all nested operations. These nested (or child) operations will have the same correlation ID as the root (or parent) operation.
+`correlation_id` is a special kind of meta property that is inherited by child operations from their parent operation, within the same execution thread. It can be used to correlate between all nested operations. These nested (or child) operations will have the same correlation ID as the root (or parent) operation.
 
-This is threadsafe, so correlation ID 
+The most common use case for `correlation_id` is for web server request handling. All operations that were executed within the same request, will be easily correlateable using the `correlation_id`.
 
 ``` py linenums="1" title="Correlation ID example"
 def correlation_id_example():
@@ -29,8 +29,8 @@ Use custom properties to describe a specific instance of the operation.
 
 For example, consider this method that fetches items from a storage, but first tries to fetch them from a cache:
 
-``` py linenums="1" title="Common way to log cache hit / miss"
-def get_items_from_storage(self):
+``` py linenums="1" title="Item Fetching Example"
+def fetch_items(self):
     items = self.cache.get('items')
     if items is None:
         items = self.storage.get('items')
@@ -40,8 +40,8 @@ def get_items_from_storage(self):
 
 In this case, we might want to log the cache hit / miss, and the number of items returned. No more need for ambiguous log messages such as "items retrieved from cache" or "items retrieved from storage".
 
-``` py linenums="1" title="Common way to log cache hit / miss" hl_lines="3 7"
-def get_items_from_storage(self):
+``` py linenums="1" title="Naive logging of cache hit / miss" hl_lines="3 7"
+def fetch_items(self):
     items = self.cache.get('items')
     source = 'cache' if items is not None else 'storage'
     if items is None:
@@ -55,8 +55,8 @@ def get_items_from_storage(self):
 2023-08-09 22:03:31.243611 [INFO]: 3 items retrieved from cache
 ```
 
-``` py linenums="1" title="The oplog way to log cache hit / miss, using custom properties" hl_lines="2 5 9"
-def get_items_from_storage(self):
+``` py linenums="1" title="Doing it the oplog way" hl_lines="2 5 9"
+def fetch_items(self):
     with Operation() as op:
         items = self.cache.get('items')
         is_cache_hit = items is not None
@@ -97,6 +97,6 @@ def foo():
     pass
 ```
     
-``` bash title="Output"
+``` title="Output"
 2023-08-09 22:03:31.243611 (0ms): [foo.foo / Success] {'project_version': '1.3.0', 'build_version': '20230120_001'}
 ```

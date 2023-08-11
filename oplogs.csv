@@ -1,0 +1,9 @@
+2023-08-11 22:28:24.008723,0,FluentCalculator.__init__,04a94ba0-ed7d-458a-94f5-0f1dd033fcbd,Success,None
+2023-08-11 22:28:24.009145,1000,FluentCalculator.add,04a94ba0-ed7d-458a-94f5-0f1dd033fcbd,Success,None
+2023-08-11 22:28:25.010295,1000,FluentCalculator.subtract,04a94ba0-ed7d-458a-94f5-0f1dd033fcbd,Success,None
+2023-08-11 22:28:26.011407,1003,FluentCalculator.get_result,04a94ba0-ed7d-458a-94f5-0f1dd033fcbd,Success,None
+2023-08-11 22:28:24.007214,3007,first_calc,04a94ba0-ed7d-458a-94f5-0f1dd033fcbd,Success,None
+2023-08-11 22:28:27.015495,0,FluentCalculator.__init__,e3305e32-9d79-4ca4-99c2-36af2a905d0e,Success,None
+2023-08-11 22:28:27.015981,1004,FluentCalculator.add,e3305e32-9d79-4ca4-99c2-36af2a905d0e,Success,None
+2023-08-11 22:28:28.020093,1002,FluentCalculator.divide,e3305e32-9d79-4ca4-99c2-36af2a905d0e,Failure,ZeroDivisionError
+2023-08-11 22:28:27.015054,2008,second_calc,e3305e32-9d79-4ca4-99c2-36af2a905d0e,Failure,ZeroDivisionError
