@@ -1,0 +1,9 @@
+nav:
+    - oplog: index.md
+    - getting_started.md
+    - examples.md
+    - common_concepts.md
+    - contribution.md
+    - ... # Other pages
+    - active_backlog.md
+    - alternatives.md

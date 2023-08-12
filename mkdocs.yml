@@ -47,6 +47,10 @@ extra:
     - icon: fontawesome/brands/linkedin
       link: https://www.linkedin.com/in/ori-bar-ilan/
 
+plugins:
+    - search
+    - awesome-pages
+
 markdown_extensions:
   - pymdownx.highlight:
       anchor_linenums: true

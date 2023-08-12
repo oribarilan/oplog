@@ -3,6 +3,11 @@
 
 ## What is oplog?
 
+!!! warning
+
+    oplog is currently in beta. At this point, we expect the API to be stable and core functionality to be working as expected. However, there are still some features that you may find missing. If you have any feedback, please open an issue.
+
+
 oplog is a modern logging library for Python application.
 oplog offers a different paradigm for logging, which is based on the concept of logging operations.
 Instead of creating a "log-book", which is a long scroll of text messages, oplog is about logging operations with rich data.

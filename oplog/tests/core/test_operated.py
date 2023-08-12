@@ -1,9 +1,5 @@
-import asyncio
-import pytest
 
-from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 from oplog.core.operated import Operated
-from oplog.core.operation import Operation
 
 from oplog.tests.logged_test_case import OpLogTestCase
 

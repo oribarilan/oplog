@@ -2,7 +2,6 @@ from contextlib import AbstractContextManager
 import contextvars
 import datetime
 import inspect
-import json
 import logging
 import multiprocessing
 import threading

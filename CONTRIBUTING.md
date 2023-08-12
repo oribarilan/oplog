@@ -17,7 +17,6 @@ Please refer to [Code of Conduct](CODE_OF_CONDUCT.md) for our standards of commu
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number.
 
 * Make sure you follow our coding conventions. 
-TODO: add link to coding conventions
 
 ## Add a Feature
 
