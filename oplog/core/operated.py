@@ -6,10 +6,8 @@ from oplog.core.operation import Operation
 class Operated:
     def __init__(self, name: Optional[str] = None, suppress: bool = False):
         """Creates an underlying operation. Refer to Operation for more details.
-
-        Args:
-            name (Optional[str], optional): If not given, the method name (and class) will be used.
-            suppress (bool, optional): Defaults to False.
+        This should be used as a decorator on a function or method.
+        For arguments documentation, refer to Operation.__init__.
         """
         self.name = name
         self.suppress = suppress

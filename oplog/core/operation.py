@@ -19,9 +19,7 @@ active_operation_stack = contextvars.ContextVar("active_operation_stack", defaul
 
 
 class Operation(AbstractContextManager):
-    # TODO add user support to extend inheritable props
-    # TODO support async
-    _global_props: Optional[Dict[str, Any]] = {}
+    global_props: Optional[Dict[str, Any]] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
         self.name = name
@@ -55,7 +53,7 @@ class Operation(AbstractContextManager):
 
     @classmethod
     def factory_reset(cls) -> None:
-        cls._global_props = {}
+        cls.global_props = {}
 
     @classmethod
     def _get_caller_logger(cls) -> logging.Logger:
@@ -129,18 +127,6 @@ class Operation(AbstractContextManager):
         # this will either suprress (if configured) or no, in case an error was thrown in context
         return self.suppress
 
-    def _is_too_big(self) -> bool:
-        serialized_msg = self.serialize()
-        # encode to utf-8 to get the size in bytes
-        encoded_message = serialized_msg.encode("utf-8")
-        message_kb = len(encoded_message) / 1024
-        max_size_kb = 2
-        return message_kb >= max_size_kb
-
-    def serialize(self):
-        props = self._get_property_bag()
-        return json.dumps(props)
-
     def __hash__(self):
         return hash(self.op_id)
 
@@ -148,24 +134,6 @@ class Operation(AbstractContextManager):
         if isinstance(other, Operation):
             return other.id == self.id
         return False
-
-    def _get_main_props(self) -> Dict[str, Any]:
-        main_props = dict()
-        main_props[Constants.BASE_PROPS.NAME] = self.name
-        main_props[Constants.BASE_PROPS.RESULT] = self.result
-        main_props[Constants.BASE_PROPS.DURATION_MS] = self.duration_ms
-        main_props[Constants.BASE_PROPS.EXCEPTION_TYPE] = self.exception_type
-        main_props[Constants.BASE_PROPS.EXCEPTION_MSG] = self.exception_msg
-
-        # TODO add support for global props
-        # main_props['version'] = self.encoder.encode(self._version)
-        return main_props
-
-    def _get_property_bag(self):
-        props = self._get_main_props()
-        props["custom_props"] = self.custom_props
-        props["meta_props"] = self.meta_props
-        return props
 
     def add(self, prop_name: str, value: Any) -> None:
         self._add_custom_prop(property_name=prop_name, value=value)
@@ -194,9 +162,9 @@ class Operation(AbstractContextManager):
 
     @classmethod
     def _add_global_prop(cls, property_name: str, value: Any) -> None:
-        if property_name in cls._global_props:
+        if property_name in cls.global_props:
             raise OperationPropertyAlreadyExistsException(prop_name=property_name)
-        cls._global_props[property_name] = value
+        cls.global_props[property_name] = value
 
     def pretty_print(self) -> str:
         pretty_string = f"{self.end_time_utc} [{self.meta_props[Constants.BASE_PROPS.LEVEL]}] - [{self.name}] {self.result}. Custom props: {self.custom_props}"

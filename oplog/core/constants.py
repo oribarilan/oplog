@@ -1,5 +1,4 @@
 class Constants:
-    META_PROPS = "meta_props"
     CUSTOM_PROPS = "custom_props"
 
     class BASE_PROPS:

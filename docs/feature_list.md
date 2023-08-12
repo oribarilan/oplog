@@ -5,8 +5,7 @@
 1. Timeouts (async only or for sync as well?)
     - https://stackoverflow.com/questions/45426713/how-to-gracefully-timeout-with-asyncio
     - https://stackoverflow.com/questions/492519/timeout-on-a-function-call
-2. Add CSV formatter
-3. revisit the timing mechanism (performance timer vs clock timer)
+2. Revisit the timing mechanism (performance timer vs clock timer)
 
 ### Nice haves
 1. Support custom inheritors
@@ -17,13 +16,10 @@
 2. Getting Started
 3. Refer to FastAPI for docs
 4. API reference
+5. Sections and ordering of the pages
+6. Compare logbook to oplog
 
 ## TODOs aesthetics
-
-1. logos and icons
-[docs](https://squidfunk.github.io/mkdocs-material/setup/changing-the-logo-and-icons/#configuration)
-    - logo
-    - favicon
 
 2. add git repo
 [docs](https://squidfunk.github.io/mkdocs-material/setup/adding-a-git-repository/#adding-a-git-repository)

@@ -17,8 +17,8 @@ class VerboseOplogLineFormatter(logging.Formatter):
             if len(op.custom_props) > 0:
                 msg += f" {op.custom_props}"
             
-            if len(op._global_props) > 0:
-                msg += f" {op._global_props}"
+            if len(op.global_props) > 0:
+                msg += f" {op.global_props}"
             
             return msg
         else:

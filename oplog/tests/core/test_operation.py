@@ -72,8 +72,8 @@ class TestOperation(OpLogTestCase):
         self.assertEqual(len(self.ops), 1)
 
         op = self.get_op("test_op")
-        self.assertIn(prop_name, op._global_props)
-        self.assertEqual(op._global_props[prop_name], prop_value)
+        self.assertIn(prop_name, op.global_props)
+        self.assertEqual(op.global_props[prop_name], prop_value)
 
     def test_operation_add_valueIsDict_customPropsAdded(self):
         prop_name_1 = "test_custom_prop_1"
