@@ -9,7 +9,6 @@ import time
 import traceback
 from typing import Any, Dict, Iterable, Optional, Type
 import uuid
-from oplog.core.constants import Constants
 
 from oplog.core.exceptions import OperationPropertyAlreadyExistsException
 
@@ -123,7 +122,8 @@ class Operation(AbstractContextManager):
 
         self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
 
-        # this will either suprress (if configured) or no, in case an error was thrown in context
+        # this will either suprress (if configured) or no, 
+        # in case an error was thrown in context
         return self.suppress
 
     def __hash__(self):
@@ -166,7 +166,10 @@ class Operation(AbstractContextManager):
         cls.global_props[property_name] = value
 
     def pretty_print(self) -> str:
-        pretty_string = f"{self.end_time_utc} [{self.meta_props[Constants.BASE_PROPS.LEVEL]}] - [{self.name}] {self.result}. Custom props: {self.custom_props}"
+        pretty_string = f"{self.start_time_utc} [{self.log_level}] - "
+        pretty_string += f"[{self.name}] {self.result}."
+        pretty_string += f"Custom props: {self.custom_props}"
         if self.result != "Success":
-            pretty_string += f" Exception type: {self.exception_type}, Exception msg: {self.exception_msg}."
+            pretty_string += f" Exception type: {self.exception_type}."
+            pretty_string += f" Exception msg: {self.exception_msg}."
         return pretty_string

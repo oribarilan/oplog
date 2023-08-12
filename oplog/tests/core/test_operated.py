@@ -19,7 +19,8 @@ class OperatedTestClass:
         pass
 
 class TestOperated(OpLogTestCase):
-    # TODO the correct testing would be to mock Operation and to make sure the constructor is called with the correct arguments
+    # TODO the correct testing would be to mock Operation and to 
+    # make sure the constructor is called with the correct arguments
     
     def test_operated_withoutName_underlyingOperationCreated(self):
         otc = OperatedTestClass()

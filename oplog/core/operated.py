@@ -1,4 +1,4 @@
-from functools import update_wrapper, wraps
+from functools import update_wrapper
 from typing import Optional
 from oplog.core.operation import Operation
 
@@ -21,7 +21,7 @@ class Operated:
                 try:
                     # get class name if possible
                     qualifier_name = func.__qualname__.split(".")[0]
-                except:
+                except:  # noqa: E722
                     qualifier_name = func.__module__
 
                 op_name = f"{qualifier_name}.{function_name}"
