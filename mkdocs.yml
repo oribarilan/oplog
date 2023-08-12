@@ -1,8 +1,13 @@
 site_name: oplog
 site_url: https://google.com
+repo_url: https://github.com/oribarilan/oplog
+repo_name: oribarilan/oplog
+
 theme:
   name: material
   favicon: assets/favicon_round2.png
+  icon:
+    repo: fontawesome/brands/github
   logo: assets/logo.png
   features:
     - pymdownx.highlight:
