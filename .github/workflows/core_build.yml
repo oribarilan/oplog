@@ -1,4 +1,4 @@
-name: Reuseable Build
+name: Core Build
 
 on:
   workflow_call
