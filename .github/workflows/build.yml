@@ -1,10 +1,10 @@
-name: Package Build
+name: Reuseable Build
 
 on:
   workflow_call
 
 jobs:
-  build:
+  reuseable_build:
 
     runs-on: ubuntu-latest
     # strategy:

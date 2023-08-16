@@ -1,6 +1,6 @@
-name: Package Build
+name: PR & Master Build
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
