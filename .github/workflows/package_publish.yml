@@ -10,10 +10,11 @@ on: [push, pull_request]
 permissions:
   contents: read
 
-core_build:
-  uses: ./.github/workflows/core_build.yml
 
 jobs:
+
+  core_build:
+    uses: ./.github/workflows/core_build.yml
 
   deploy:
 
