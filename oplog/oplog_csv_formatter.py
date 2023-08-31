@@ -1,7 +1,7 @@
 import logging
-from oplog.core.operation import Operation
+from oplog.operation import Operation
 
-from oplog.formatters.verbose_oplog_line_formatter import \
+from oplog.verbose_oplog_line_formatter import \
     LogRecordMissingOperationException
 
 

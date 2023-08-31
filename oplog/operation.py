@@ -10,7 +10,7 @@ import traceback
 from typing import Any, Dict, Iterable, Optional, Type
 import uuid
 
-from oplog.core.exceptions import OperationPropertyAlreadyExistsException
+from oplog.exceptions import OperationPropertyAlreadyExistsException
 
 
 active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])

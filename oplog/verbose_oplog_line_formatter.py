@@ -1,5 +1,5 @@
 import logging
-from oplog.core.operation import Operation
+from oplog.operation import Operation
 
 
 class LogRecordMissingOperationException(Exception):

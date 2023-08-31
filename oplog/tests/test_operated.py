@@ -1,6 +1,6 @@
 
-from oplog.core.operated import Operated
 
+from oplog.operated import Operated
 from oplog.tests.logged_test_case import OpLogTestCase
 
 
