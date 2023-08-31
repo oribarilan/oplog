@@ -7,7 +7,7 @@ name = "op-log"
 version = "0.1.2"
 description = "Modern logging library for Python applications, focused on object-oriented, production-ready logging."
 readme = "README.md"
-authors = [{ name = "Ori Bar-ilan", email = "tba" }]
+authors = [{ name = "Ori Bar-ilan", email = "author@oplog_ori.com" }]
 license = { file = "LICENSE" }
 classifiers = [
     "License :: OSI Approved :: MIT License",
