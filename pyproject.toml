@@ -1,3 +1,27 @@
 [build-system]
-requires = ["setuptools>=46.4.0", "wheel"]
+requires      = ["setuptools>=61.0.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "op-log"
+version = "0.1.2"
+description = "Modern logging library for Python applications, focused on object-oriented, production-ready logging."
+readme = "README.md"
+authors = [{ name = "Ori Bar-ilan", email = "tba" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["oplog", "logging", "logger"]
+dependencies = [
+
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+dev = ["pip-tools", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/oribarilan/oplog"
