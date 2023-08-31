@@ -3,15 +3,15 @@
 ## Installation
 You can install oplog from PyPI using pip:
 ```bash
-pip install oplog
+pip install op-log
 ```
 
 ## First Steps
 
 ### Setting up the logger
 
-You already have a logger in your code. Oplog does not interfere with it, but works with it.
-Set up an additional handler, and set the formatter to `OpLogLineFormatter`:
+Oplog naturally extends Python's built-in logger. 
+To start, add an "Operation handler" of your choice, by creating any Python logging handler and attaching `OperationLogFilter` to it. Then, customize your output log format with VerboseOpLogLineFormatter or create your own formatter.
 
 ``` py linenums="1" title="Setting up the logger" hl_lines="3"
 

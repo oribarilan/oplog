@@ -1,9 +1,6 @@
 import logging
+from oplog.exceptions import LogRecordMissingOperationException
 from oplog.operation import Operation
-
-
-class LogRecordMissingOperationException(Exception):
-    pass
 
 
 class VerboseOplogLineFormatter(logging.Formatter):

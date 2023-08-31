@@ -1,8 +1,6 @@
 import logging
+from oplog.exceptions import LogRecordMissingOperationException
 from oplog.operation import Operation
-
-from oplog.verbose_oplog_line_formatter import \
-    LogRecordMissingOperationException
 
 
 class OplogCsvFormatter(logging.Formatter):
