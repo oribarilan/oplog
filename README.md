@@ -1,106 +1,87 @@
 # oplog
 
-An operational logging library for Python. No more cumbersome logging statements. No more investigating logs with complex regex. Just annotate your functions and let `oplog` do the rest.
+![oplog logo](https://oribarilan.github.io/oplog/imgs/logo_full.png)
 
-Our most up-to-date documentation is available at [https://oribarilan.github.io/oplog/](https://oribarilan.github.io/oplog/).
-
-## Concepts
-
-Logs are often a mess. They are hard to read and hard to understand. They are often not actionable nor useful. There is a lack of consistency between logs. This makes it hard to understand what is going on in a system.
-
-When investigating an issue, querying logs is often a pain. It is hard to find the relevant logs without being a regex master.
-
-`oplog` aims to solve these problems by providing a simple, consistent and structured way to log operations.
-
-Systems that use `oplog`, not only have a consistent way to log operations, but also have a consistent way to query them. This makes it to investigate issues, write alerts and build dashboards.
-
-### Specifics
-
-*Operation* is a unit of work that is performed. This is the smallest unit of work that can be logged. For example, a function call. Operations will automatically be logged when they are finished. Operations contain metadata (e.g. start time, end time, duration, etc.) as well as custom properties.
-
-This is done by adding the *Operation* to the `LogRecord`, then allowing the users to handle it in a logging `Handler` and/or `Formatter`.
-
-They can be printed nicely using a logging formatter (see `verbose_op_log_line_formatter.py` as an example).
-In production systems, it is recommended to serialize the operations to JSON (see method `serialize()`) and send them to a log aggregation service such as [AzureDataExplorer](https://dataexplorer.azure.com/), [Elasticsearch](https://www.elastic.co/products/elasticsearch) or [Splunk](https://www.splunk.com/).
-
-## Getting Started WIP
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
-
-### Prerequisites
-
-What things you need to install the software and how to install them
-
-```
-Give examples
+## Installation
+You can install oplog from PyPI using pip:
+```bash
+pip install op-log
 ```
 
-### Installing
+## What is oplog?
 
-A step by step series of examples that tell you how to get a development env running
+oplog is a modern logging library for Python application.
+oplog offers a different paradigm for logging, which is based on the concept of logging operations.
+Instead of creating a "log-book", which is a long scroll of text messages, oplog is about logging operations with rich data.
 
-Say what the step will be
+### Key features
 
-```
-Give the example
-```
+1. **Object Oriented**: Intuitive API, easy to use and extend.
+2. **Modern & Scalable**: Unlike log messages, oplog is scaleable. Ingesting oplogs to a columnar database allows you to query, analyze and monitor your app in a modern and performant way.
+3. **Standardized**: No more mess and inconsistency across your logs. oplog creates a standard for how logs should be written across your code base. Clean code, clean logs.
+4. **Production Ready**: Easily create dashboards and monitors on top of logged data.
+5. **Lightweight**: oplog is a layer on top of the standard Python logging library. It is easy to integrate and use.
+6. **Minimal**: While oplog is rich with metadata, you only log what you need. Creating smaller and more efficient logs.
 
-And repeat
+## Getting Started
 
-```
-until finished
-```
+### Setting up the logger
 
-End with an example of getting some data out of the system or using it for a little demo
+Oplog naturally extends Python's built-in logger. 
+To start, add an "Operation handler" of your choice, by creating any Python logging handler and attaching `OperationLogFilter` to it. Then, customize your output log format with `VerboseOpLogLineFormatter` or create your own formatter.
 
-## Running the tests
+``` py linenums="1" title="Setting up the logger" hl_lines="6 7"
+import logging
+from oplog import Operated, OperationLogFilter
+from oplog.formatters import VerboseOplogLineFormatter
 
-Explain how to run the automated tests for this system
+stream_op_handler = logging.StreamHandler()
+stream_op_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
+stream_op_handler.setFormatter(VerboseOplogLineFormatter()) # <-- Example on how to use a custom formatter
+logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-### Code Coverage
-
-Code coverage is enforced by `pytest-cov`. To run the tests and generate a coverage report, 
-run the following command from the root directory`:
-
-```
-pytest --cov=oplog --cov-report=xml oplog/tests
-```
-
-For VS Code, you can use [Coverage Gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters) to view the coverage report within the editor.
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Documentation
-
-Using mkdocs with mkdocs-material theme. To run the docs locally, run the following command from the root directory:
-
-```
-mkdocs serve
+# using a decorator, for simplicity
+@Operated()
+def foo():
+    pass
+    
+foo()
 ```
 
-## Contributing
+Output:
+``` title="Output"
+2023-08-31 17:31:08.519900 (0ms): [foo.foo / Success]
+```
 
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+As you can see, you can use any handler, formatter and filter you want. Oplog does not interfere with them.
 
-## Authors & Area Owners
+* Line 6 (highlighted) makes any handler an "Operation Handler". If you want to also handle log-book-style logs, you can keep your existing handler (for log message, like `logger.info("This is a conventional log message")`).
+* Line 7 (highlighted) decides on the log format. It is using a built-in formatter, but you can create your own formatter easily.
 
-* **Ori Bar-ilan**
+### Using Context Managers
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+For more control, you can use the context manager syntax. This allows, for example, to add custom properties to the operation.
 
-## License
+``` py linenums="1" title="Logging operations using the context manager" hl_lines="12 13"
+import logging
+from oplog import Operation, OperationLogFilter
+from oplog.formatters import VerboseOplogLineFormatter
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+stream_op_handler = logging.StreamHandler()
+stream_op_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
+stream_op_handler.setFormatter(VerboseOplogLineFormatter()) # <-- Example on how to use a custom formatter
+logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 
+# using a context manager, for more control
+def bar():
+    with Operation(name="my_operation") as op:
+        op.add("metric", 5)
+        pass
+    
+bar()
+```
+
+Output:
+``` title="Output"
+2023-08-31 17:41:09.088966 (0ms): [my_operation / Success] {'metric': 5}
+```

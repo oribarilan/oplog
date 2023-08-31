@@ -4,6 +4,7 @@ nav:
     - examples.md
     - common_concepts.md
     - contribution.md
+    - development.md
     - ... # Other pages
     - active_backlog.md
     - alternatives.md
