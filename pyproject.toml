@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "op-log"
-version = "0.1.4"
+version = "0.1.5"
 description = "Modern logging library for Python applications, focused on object-oriented, production-ready logging."
 readme = "README.md"
 authors = [{ name = "Ori Bar-ilan", email = "python.oplog@gmail.com" }]
