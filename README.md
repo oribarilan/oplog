@@ -21,13 +21,16 @@
   <a href="https://github.com/oribarilan/oplog/actions/workflows/package_build.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/package_build.yml" alt="build">
   </a>
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+  </a>
 </p>
 
 <hr>
 
 Full documentation: [oribarilan.github.io/oplog](https://oribarilan.github.io/oplog/).
 
-Source code: [github.com/oribarilan/oplog](http://oribarilan.github.io/oplog/).
+Source code: [github.com/oribarilan/oplog](http://www.github.com/oribarilan/oplog/).
 
 ---
 

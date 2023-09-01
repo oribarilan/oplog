@@ -1,0 +1,12 @@
+name: Security Check
+
+on: [push, pull_request]
+
+jobs:
+  security-check:
+    runs-on: ubuntu-latest
+    name: PyCharm Python Security Scanner
+    steps:
+        - uses: tonybaloney/pycharm-security@1.25.1
+
+                
