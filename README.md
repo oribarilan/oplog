@@ -14,6 +14,8 @@ oplog is a modern logging library for Python application.
 oplog offers a different paradigm for logging, which is based on the concept of logging operations.
 Instead of creating a "log-book", which is a long scroll of text messages, oplog is about logging operations with rich data.
 
+Please refer to our full documentation at [oribarilan.github.io/oplog](https://oribarilan.github.io/oplog/).
+
 ### Key features
 
 1. **Object Oriented**: Intuitive API, easy to use and extend.
