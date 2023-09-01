@@ -17,12 +17,21 @@
   <a href="https://pypi.org/project/op-log/">
     <img src="https://img.shields.io/pypi/dm/op-log?link=https%3A%2F%2Fpypi.org%2Fproject%2Fop-log%2F" alt="downloads">
   </a>
+  <!-- Ruff credit -->
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+  </a>
   <!-- Build -->
   <a href="https://github.com/oribarilan/oplog/actions/workflows/package_build.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/package_build.yml" alt="build">
   </a>
-  <a href="https://github.com/astral-sh/ruff">
-    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+  <!-- Lint -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/lint.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/lint.yml?label=lint" alt="lint">
+  </a>
+  <!-- Security -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/security_check.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/security_check.yml?label=security" alt="security">
   </a>
 </p>
 
