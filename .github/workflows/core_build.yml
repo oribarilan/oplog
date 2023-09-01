@@ -7,9 +7,12 @@ jobs:
   reuseable_build:
 
     runs-on: ubuntu-latest
-    # strategy:
-    #   matrix:
-    #     python-version: ["3.9", "3.10", "3.11"]
+    # env:
+    #   COVERAGE_SINGLE: 60
+    #   COVERAGE_TOTAL: 60
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@v3
