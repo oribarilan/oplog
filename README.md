@@ -1,6 +1,35 @@
-# oplog
+<!-- Top Section -->
+<p align="center">
+  <a href="https://oribarilan.github.io/oplog"><img src="https://oribarilan.github.io/oplog/imgs/logo_full.png" alt="oplog logo"></a>
+</p>
 
-![oplog logo](https://oribarilan.github.io/oplog/imgs/logo_full.png)
+<p align="center">
+  <b>Modern logging library for Python applications.</b>
+</p>
+
+<!-- Badges using https://shields.io/badges/ -->
+<p align="center">
+  <!-- Python versions -->
+  <a href="https://www.python.org/downloads/">
+    <img src="https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11-blue" alt="python versions">
+  </a>
+  <!-- Downloads -->
+  <a href="https://pypi.org/project/op-log/">
+    <img src="https://img.shields.io/pypi/dm/op-log?link=https%3A%2F%2Fpypi.org%2Fproject%2Fop-log%2F" alt="downloads">
+  </a>
+  <!-- Build -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/package_build.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/package_build.yml" alt="build">
+  </a>
+</p>
+
+<hr>
+
+Full documentation: [oribarilan.github.io/oplog](https://oribarilan.github.io/oplog/).
+
+Source code: [github.com/oribarilan/oplog](http://oribarilan.github.io/oplog/).
+
+---
 
 ## Installation
 You can install oplog from PyPI using pip:
