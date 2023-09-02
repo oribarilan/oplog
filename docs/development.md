@@ -16,7 +16,13 @@ Code coverage is enforced by `pytest-cov`. To run the tests and generate a cover
 run the following command from the root directory`:
 
 ```
-pytest --cov=oplog --cov-report=xml oplog/tests
+coverage run --omit 'oplog/tests/*','*/__pycache__/*' -m pytest
+```
+
+and then
+
+```
+coverage report -m
 ```
 
 For VS Code, you can use [Coverage Gutters](https://marketplace.visualstudio.com/items?itemName=ryanluker.vscode-coverage-gutters) to view the coverage report within the editor.

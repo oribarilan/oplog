@@ -1,49 +1,37 @@
-name: pytester-cov workflow
+name: Code Coverage Check
 
 on: [push, pull_request]
 
 jobs:
-  build:
-
+  coverage-check:
     runs-on: ubuntu-latest
-    env:
-      COVERAGE_SINGLE: 60
-      COVERAGE_TOTAL: 60
 
     steps:
-    - uses: actions/checkout@main
-    - name: Set up Python 3.11
-      uses: actions/setup-python@main
-      with:
-        python-version: 3.11
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: pytester-cov
-      id: pytester-cov
-      uses: programmingwithalex/pytester-cov@main
-      with:
-        pytest-root-dir: '.'
-        cov-omit-list: 'test/*, temp/main3.py, temp/main4.py'
-        cov-threshold-single: ${{ env.COVERAGE_SINGLE }}
-        cov-threshold-total: ${{ env.COVERAGE_TOTAL }}
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
 
-    - name: Coverage single fail - exit
-      if: ${{ steps.pytester-cov.outputs.cov-threshold-single-fail == 'true' }}
-      run: |
-        echo "cov single fail ${{ steps.pytester-cov.outputs.cov-threshold-single-fail }}"
-        exit 1
+      - name: Install dependencies
+        run: |
+          pip install coverage
 
-    - name: Coverage total fail - exit
-      if: ${{ steps.pytester-cov.outputs.cov-threshold-total-fail == 'true' }}
-      run: |
-        echo "cov single fail ${{ steps.pytester-cov.outputs.cov-threshold-total-fail }}"
-        exit 1
+      - name: Run coverage report
+        run: |
+          coverage run --omit 'oplog/tests/*','*/__pycache__/*' -m pytest
+          coverage report -m --fail-under=90
 
-    - name: Commit pytest coverage table
-      uses: peter-evans/commit-comment@main
-      with:
-        body: ${{ steps.pytester-cov.outputs.output-table }}
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: ./coverage.xml
+
+      - name: Fail if coverage is below threshold
+        run: |
+          if [ -f coverage.xml ]; then
+            python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); lines = root.find('totals').find('lines').get('percent'); exit(1) if float(lines) < X else exit(0);" || true
+          fi
