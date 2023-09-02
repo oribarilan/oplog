@@ -41,7 +41,7 @@ jobs:
       - name: Check coverage per file
         run: |
           if [ -f coverage.xml ]; then
-              python scripts/single_file_coverage_check.py || true
+              python scripts/single_file_coverage_check.py $SINGLE_COVERAGE_THRESHOLD
           else
               echo "Coverage report not found, failing the workflow"
               exit 1

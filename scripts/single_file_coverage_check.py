@@ -2,8 +2,20 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 import sys
 
-# Define the threshold (X) for line-rate
-threshold = 0.90  # Adjust as needed
+# Check if the correct number of arguments is provided
+if len(sys.argv) != 2:
+    print("Usage: python check_coverage.py <threshold_percentage>")
+    sys.exit(1)
+
+# Get the threshold value from the command-line argument (in percentage format)
+try:
+    threshold_percentage = float(sys.argv[1])
+except ValueError:
+    print("Threshold must be a valid float value in percentage format")
+    sys.exit(1)
+
+# Convert the percentage to a fraction (e.g., 90% to 0.9)
+threshold = threshold_percentage / 100.0
 
 # Get the directory of the script (where the script is located)
 script_dir = Path(__file__).resolve().parent
