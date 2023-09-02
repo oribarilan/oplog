@@ -17,7 +17,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install coverage
+          pip install -r requirements-dev.txt
 
       - name: Run coverage report
         run: |
