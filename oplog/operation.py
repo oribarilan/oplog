@@ -10,7 +10,10 @@ import traceback
 from typing import Any, Dict, Iterable, Optional, Type
 import uuid
 
-from oplog.exceptions import GlobalOperationPropertyAlreadyExistsException, OperationPropertyAlreadyExistsException
+from oplog.exceptions import (
+    GlobalOperationPropertyAlreadyExistsException,
+    OperationPropertyAlreadyExistsException
+)
 
 
 active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])

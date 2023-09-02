@@ -29,6 +29,10 @@
   <a href="https://github.com/oribarilan/oplog/actions/workflows/lint.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/lint.yml?label=lint" alt="lint">
   </a>
+  <!-- Coverage -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/coverage.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/coverage.yml?label=coverage%3E95%25" alt="coverage">
+  </a>
   <!-- Security -->
   <a href="https://github.com/oribarilan/oplog/actions/workflows/security_check.yml">
     <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/security_check.yml?label=security" alt="security">

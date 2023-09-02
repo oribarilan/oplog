@@ -2,7 +2,10 @@ import inspect
 import logging
 from unittest.mock import patch
 from parameterized import parameterized
-from oplog.exceptions import GlobalOperationPropertyAlreadyExistsException, OperationPropertyAlreadyExistsException
+from oplog.exceptions import (
+    GlobalOperationPropertyAlreadyExistsException,
+    OperationPropertyAlreadyExistsException
+)
 from oplog.operation import Operation
 
 from oplog.tests.logged_test_case import OpLogTestCase

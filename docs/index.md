@@ -1,5 +1,51 @@
-# Welcome to oplog
-![oplog](imgs/logo_full.png)
+<!-- Top Section -->
+<p align="center">
+  <a href="https://oribarilan.github.io/oplog"><img src="https://oribarilan.github.io/oplog/imgs/logo_full.png" alt="oplog logo"></a>
+</p>
+
+<p align="center">
+  <b>Modern logging library for Python applications.</b>
+</p>
+
+<!-- Badges using https://shields.io/badges/ -->
+<p align="center">
+  <!-- Python versions -->
+  <a href="https://www.python.org/downloads/">
+    <img src="https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11-blue" alt="python versions">
+  </a>
+  <!-- Downloads -->
+  <a href="https://pypi.org/project/op-log/">
+    <img src="https://img.shields.io/pypi/dm/op-log?link=https%3A%2F%2Fpypi.org%2Fproject%2Fop-log%2F" alt="downloads">
+  </a>
+  <!-- Ruff credit -->
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
+  </a>
+  <!-- Build -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/package_build.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/package_build.yml" alt="build">
+  </a>
+  <!-- Lint -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/lint.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/lint.yml?label=lint" alt="lint">
+  </a>
+  <!-- Coverage -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/coverage.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/coverage.yml?label=coverage%3E95%25" alt="coverage">
+  </a>
+  <!-- Security -->
+  <a href="https://github.com/oribarilan/oplog/actions/workflows/security_check.yml">
+    <img src="https://img.shields.io/github/actions/workflow/status/oribarilan/oplog/security_check.yml?label=security" alt="security">
+  </a>
+</p>
+
+<hr>
+
+Full documentation: [oribarilan.github.io/oplog](https://oribarilan.github.io/oplog/).
+
+Source code: [github.com/oribarilan/oplog](http://www.github.com/oribarilan/oplog/).
+
+---
 
 ## What is oplog?
 
