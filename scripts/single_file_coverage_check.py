@@ -41,7 +41,7 @@ for class_element in root.findall('.//class[@filename]'):
         failed_files.append((filename, line_rate))
 
 if failed_files:
-    print('The following files have coverage below the threshold:')
+    print(f'Files with coverage below the threshold ({threshold_percentage}):')
     for filename, line_rate in failed_files:
-        print(f'- {filename}: {line_rate * 100:.2f}% coverage')  # Convert line_rate to percentage
+        print(f'- {filename}: {line_rate * 100:.2f}% coverage')
     sys.exit(1)

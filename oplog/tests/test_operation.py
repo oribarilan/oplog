@@ -2,7 +2,7 @@ import inspect
 import logging
 from unittest.mock import patch
 from parameterized import parameterized
-from oplog.exceptions import OperationPropertyAlreadyExistsException
+from oplog.exceptions import GlobalOperationPropertyAlreadyExistsException, OperationPropertyAlreadyExistsException
 from oplog.operation import Operation
 
 from oplog.tests.logged_test_case import OpLogTestCase
@@ -77,6 +77,22 @@ class TestOperation(OpLogTestCase):
         op = self.get_op("test_op")
         self.assertIn(prop_name, op.global_props)
         self.assertEqual(op.global_props[prop_name], prop_value)
+
+    def test_addGlobal_globalPropertyAlreadyExists_raises(self):
+        prop_name = "test_global_prop"
+        prop_value_1 = 1
+        prop_value_2 = 2
+        
+        with self.assertRaises(GlobalOperationPropertyAlreadyExistsException):
+            Operation.add_global(prop_name=prop_name, value=prop_value_1)
+            Operation.add_global(prop_name=prop_name, value=prop_value_2)
+            
+    def test_addGlobal_unsupportedType_raises(self):
+        prop_name = "test_global_prop"
+        prop_value = { "test": 1 }
+        
+        with self.assertRaises(TypeError):
+            Operation.add_global(prop_name=prop_name, value=prop_value)
 
     def test_operation_add_valueIsDict_customPropsAdded(self):
         prop_name_1 = "test_custom_prop_1"

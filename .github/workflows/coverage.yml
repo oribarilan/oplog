@@ -3,7 +3,7 @@ name: Code Coverage Check
 on: [push, pull_request]
 
 env:
-  GLOBAL_COVERAGE_THRESHOLD: 91
+  GLOBAL_COVERAGE_THRESHOLD: 95
   SINGLE_COVERAGE_THRESHOLD: 90
 
 jobs:

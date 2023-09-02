@@ -10,7 +10,7 @@ import traceback
 from typing import Any, Dict, Iterable, Optional, Type
 import uuid
 
-from oplog.exceptions import OperationPropertyAlreadyExistsException
+from oplog.exceptions import GlobalOperationPropertyAlreadyExistsException, OperationPropertyAlreadyExistsException
 
 
 active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])
@@ -65,10 +65,6 @@ class Operation(AbstractContextManager):
                 caller_module = inspect.getmodule(caller_frame[0])
                 if caller_module is not None:
                     logger = logging.getLogger(caller_module.__name__)
-
-        # safety measure
-        if logger is None:
-            return logging.getLogger()
         return logger
 
     def __enter__(self) -> "Operation":
@@ -162,14 +158,5 @@ class Operation(AbstractContextManager):
     @classmethod
     def _add_global_prop(cls, property_name: str, value: Any) -> None:
         if property_name in cls.global_props:
-            raise OperationPropertyAlreadyExistsException(prop_name=property_name)
+            raise GlobalOperationPropertyAlreadyExistsException(prop_name=property_name)
         cls.global_props[property_name] = value
-
-    def pretty_print(self) -> str:
-        pretty_string = f"{self.start_time_utc} [{self.log_level}] - "
-        pretty_string += f"[{self.name}] {self.result}."
-        pretty_string += f"Custom props: {self.custom_props}"
-        if self.result != "Success":
-            pretty_string += f" Exception type: {self.exception_type}."
-            pretty_string += f" Exception msg: {self.exception_msg}."
-        return pretty_string

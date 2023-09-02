@@ -4,6 +4,11 @@ from oplog.operated import Operated
 from oplog.tests.logged_test_case import OpLogTestCase
 
 
+@Operated()
+def operated_function():
+    pass
+
+
 class OperatedTestClass:
     @Operated()
     def operated_method_without_name(self):
@@ -48,3 +53,11 @@ class TestOperated(OpLogTestCase):
 
         op = self.ops[0]
         self.assertEqual(op.name, "test_op_static")
+        
+    def test_operated_function_underlyingOperationCreated(self):
+        operated_function()
+        
+        self.assertEqual(len(self.ops), 1)
+
+        op = self.ops[0]
+        self.assertEqual(op.name, "operated_function.operated_function")

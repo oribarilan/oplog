@@ -21,7 +21,8 @@ class Operated:
                 try:
                     # get class name if possible
                     qualifier_name = func.__qualname__.split(".")[0]
-                except:  # noqa: E722
+                except AttributeError:
+                    # otherwise, get module name
                     qualifier_name = func.__module__
 
                 op_name = f"{qualifier_name}.{function_name}"
