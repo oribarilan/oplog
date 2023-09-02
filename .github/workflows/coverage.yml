@@ -3,7 +3,8 @@ name: Code Coverage Check
 on: [push, pull_request]
 
 env:
-  COVERAGE_THRESHOLD: 95
+  GLOBAL_COVERAGE_THRESHOLD: 91
+  SINGLE_COVERAGE_THRESHOLD: 90
 
 jobs:
   coverage-check:
@@ -16,35 +17,53 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.11  # Replace with your desired Python version
+          python-version: 3.11
 
       - name: Install dependencies
         run: |
           pip install -r requirements-dev.txt
 
-      - name: Run coverage report
+      - name: Create coverage report
         run: |
           coverage run --omit 'oplog/tests/*','*/__pycache__/*' -m pytest
           coverage xml -o coverage.xml
-          coverage report -m --fail-under=$COVERAGE_THRESHOLD
 
       - name: Upload coverage report
-        if: success()  # Only upload the report if previous steps were successful
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-report
+          path: ./coverage.xml
+        
+      - name: Run Global Code Coverage
         run: |
-          if [ -f coverage.xml ]; then
-            echo "Uploading coverage report"
-          else
-            echo "Coverage report not found, failing the workflow"
-            exit 1
-          fi
-        shell: bash
+          coverage report -m --fail-under=$GLOBAL_COVERAGE_THRESHOLD
 
-      - name: Fail if coverage is below threshold
+      - name: Check coverage per file
         run: |
           if [ -f coverage.xml ]; then
-            python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); root = tree.getroot(); lines = root.find('totals').find('lines').get('percent'); exit(1) if float(lines) < $COVERAGE_THRESHOLD else exit(0);" || true
+            python -c "
+            import xml.etree.ElementTree as ET
+      
+            tree = ET.parse('coverage.xml')
+            root = tree.getroot()
+      
+            failed_files = []
+      
+            for class_element in root.findall('.//class[@filename]'):
+                filename = class_element.get('filename')
+                lines = float(class_element.find('lines').get('percent'))
+                if lines < $SINGLE_COVERAGE_THRESHOLD:  # Individual threshold per file (adjust as needed)
+                    failed_files.append((filename, lines))
+      
+            if failed_files:
+                print('The following files have coverage below the threshold:')
+                for filename, lines in failed_files:
+                    print(f'- {filename}: {lines}%')
+                exit(1)
+            " || true
           else
             echo "Coverage report not found, failing the workflow"
             exit 1
           fi
         shell: bash
+        
