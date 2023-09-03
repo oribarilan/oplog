@@ -10,17 +10,18 @@ pip install op-log
 
 ### Setting up the logger
 
-Oplog naturally extends Python's built-in logger. 
-To start, add an "Operation handler" of your choice, by creating any Python logging handler and attaching `OperationLogFilter` to it. Then, customize your output log format with `VerboseOpLogLineFormatter` or create your own formatter.
+oplog naturally extends Python's built-in logger. 
+To start, create an `OperationHandler`, and attach to it any  logging handler of your choice. Additionally, you should customize your output log format with a formatter. You can create your own or use a built-in one (such as  `VerboseOpLogLineFormatter`).
 
-``` py linenums="1" title="Setting up the logger" hl_lines="6 7"
+``` py linenums="1" title="Setting up the logger" hl_lines="5 6 7 8 12"
 import logging
-from oplog import Operated, OperationLogFilter
+from oplog import Operated, OperationHandler
 from oplog.formatters import VerboseOplogLineFormatter
 
-stream_op_handler = logging.StreamHandler()
-stream_op_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
-stream_op_handler.setFormatter(VerboseOplogLineFormatter()) # <-- Example on how to use a custom formatter
+stream_op_handler = OperationHandler(
+    handler=logging.StreamHandler(), # <-- any logging handler
+    formatter=VerboseOplogLineFormatter(), # <-- custom formatter or built-in ones
+)   
 logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 
 # using a decorator, for simplicity
@@ -31,6 +32,7 @@ def foo():
 foo()
 ```
 
+Output:
 ``` title="Output"
 2023-08-31 17:31:08.519900 (0ms): [foo.foo / Success]
 ```
@@ -44,14 +46,15 @@ As you can see, you can use any handler, formatter and filter you want. Oplog do
 
 For more control, you can use the context manager syntax. This allows, for example, to add custom properties to the operation.
 
-``` py linenums="1" title="Logging operations using the context manager" hl_lines="12 13"
+``` py linenums="1" title="Logging operations using the context manager" hl_lines="13 14"
 import logging
-from oplog import Operation, OperationLogFilter
+from oplog import Operation, OperationHandler
 from oplog.formatters import VerboseOplogLineFormatter
 
-stream_op_handler = logging.StreamHandler()
-stream_op_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
-stream_op_handler.setFormatter(VerboseOplogLineFormatter()) # <-- Example on how to use a custom formatter
+stream_op_handler = OperationHandler(
+    handler=logging.StreamHandler(), # <-- any logging handler
+    formatter=VerboseOplogLineFormatter(), # <-- custom formatter or built-in ones
+)   
 logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 
 # using a context manager, for more control
@@ -63,6 +66,7 @@ def bar():
 bar()
 ```
 
+Output:
 ``` title="Output"
 2023-08-31 17:41:09.088966 (0ms): [my_operation / Success] {'metric': 5}
 ```

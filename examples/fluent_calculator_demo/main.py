@@ -12,17 +12,15 @@ repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 # Add the repository root directory to the Python path
 sys.path.append(repository_root)
 
-from oplog.core.operated import Operated # noqa: E402
-from oplog.core.operation import Operation # noqa: E402
-from oplog.core.operation_log_filter import OperationLogFilter # noqa: E402
-from oplog.formatters.oplog_csv_formatter \
-    import OplogCsvFormatter # noqa: E402
+from oplog import Operated, Operation, OperationHandler # noqa: E402
+from oplog.formatters import OplogCsvFormatter # noqa: E402
 
 
-csv_oplog_handler = logging.FileHandler(filename=Path("oplogs.csv"))
-csv_oplog_handler.addFilter(OperationLogFilter()) # <-- Only handle operation logs
-csv_oplog_handler.setFormatter(OplogCsvFormatter()) # <-- Example for a custom formatter
-logging.basicConfig(level=logging.INFO, handlers=[csv_oplog_handler])
+csv_op_handler = OperationHandler(
+    handler=logging.FileHandler(filename=Path("oplogs.csv")), # <-- any logging handler
+    formatter=OplogCsvFormatter(), # <-- use your own custom formatter, or built-in ones
+)
+logging.basicConfig(level=logging.INFO, handlers=[csv_op_handler])
 
 class FluentCalculator:
     @Operated()
