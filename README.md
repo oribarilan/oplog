@@ -4,7 +4,7 @@
 </p>
 
 <p align="center">
-  <b>Modern logging library for Python applications.</b>
+  <b>Easy-to-use context-rich Python logging library.</b>
 </p>
 
 <!-- Badges using https://shields.io/badges/ -->
