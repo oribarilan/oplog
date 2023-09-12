@@ -17,10 +17,11 @@ from oplog.formatters import OplogCsvFormatter # noqa: E402
 
 
 csv_op_handler = OperationHandler(
-    handler=logging.FileHandler(filename=Path("oplogs.csv")), # <-- any logging handler
-    formatter=OplogCsvFormatter(), # <-- use your own custom formatter, or built-in ones
+    handler=logging.FileHandler(filename=Path("oplogs.csv")),  # <-- any logging handler
+    formatter=OplogCsvFormatter(),  # <-- use your own custom formatter, or built-in ones
 )
 logging.basicConfig(level=logging.INFO, handlers=[csv_op_handler])
+
 
 class FluentCalculator:
     @Operated()
@@ -50,9 +51,13 @@ class FluentCalculator:
         time.sleep(1)
         return self.value
 
+
+try:
+    with Operation("second_calc"):
+        result2 = FluentCalculator().add(5).divide(0).get_result()
+except ZeroDivisionError:
+    pass
+    
 with Operation("first_calc"):
     result1 = FluentCalculator().add(5).subtract(3).get_result()
-    
-with Operation("second_calc", suppress=True):
-    result2 = FluentCalculator().add(5).divide(0).get_result()
 

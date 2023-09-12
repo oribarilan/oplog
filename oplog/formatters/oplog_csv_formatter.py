@@ -8,12 +8,12 @@ class OplogCsvFormatter(logging.Formatter):
         if hasattr(record, "oplog"):
             op: Operation = record.oplog
             csv_row = [
-                op.start_time_utc,
-                str(op.duration_ms),
-                op.name,
-                op.correlation_id,
-                op.result,
-                str(op.exception_type)
+                f'"{op.start_time_utc}"',
+                f'"{str(op.duration_ms)}"',
+                f'"{op.name}"',
+                f'"{op.correlation_id}"',
+                f'"{op.result}"',
+                f'"{str(op.exception_type)}"',
             ]
             return ','.join(csv_row)
         else:
