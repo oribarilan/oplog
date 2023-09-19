@@ -19,7 +19,7 @@ class TestOplogCsvFormatter(OpLogTestCase):
             self._get_num_columns_for_csv_formatted_operation(f"operation{separator}name"))
 
         # assert
-        self.assertEquals(expected_num_columns, actual_num_columns)
+        self.assertEqual(expected_num_columns, actual_num_columns)
 
     @staticmethod
     def _get_num_columns_for_csv_formatted_operation(operation_name: str) -> int:
