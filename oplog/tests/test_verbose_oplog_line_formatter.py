@@ -2,6 +2,7 @@ import logging
 from unittest.mock import Mock
 
 from oplog import Operation
+from oplog.exceptions import LogRecordMissingOperationException
 from oplog.formatters import VerboseOplogLineFormatter
 from oplog.tests.logged_test_case import OpLogTestCase
 
@@ -36,7 +37,7 @@ class TestVerboseOplogLineFormatter(OpLogTestCase):
         global_prop_value = "some_global_value"
         mock_record = Mock(spec=logging.LogRecord)
         with Operation(name=op_name) as op:
-            op.add(global_prop_name, global_prop_value)
+            op.add_global(global_prop_name, global_prop_value)
         mock_record.oplog = op
         formatter = VerboseOplogLineFormatter()
 
@@ -64,3 +65,11 @@ class TestVerboseOplogLineFormatter(OpLogTestCase):
         self.assertIn(VerboseOplogLineFormatterTestException.__name__, log_line)
         self.assertIn(error_msg, log_line)
 
+    def test_format_logRecordIsNotOplog(self):
+        # arrange
+        mock_record = Mock(spec=logging.LogRecord)
+        formatter = VerboseOplogLineFormatter()
+
+        # act
+        with self.assertRaises(LogRecordMissingOperationException):
+            formatter.format(record=mock_record)

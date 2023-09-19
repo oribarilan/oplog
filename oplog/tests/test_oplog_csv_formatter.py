@@ -3,6 +3,7 @@ import logging
 from unittest.mock import Mock
 
 from oplog import Operation
+from oplog.exceptions import LogRecordMissingOperationException
 from oplog.formatters import OplogCsvFormatter
 from oplog.tests.logged_test_case import OpLogTestCase
 
@@ -20,6 +21,15 @@ class TestOplogCsvFormatter(OpLogTestCase):
 
         # assert
         self.assertEqual(expected_num_columns, actual_num_columns)
+
+    def test_format_logRecordIsNotOplog(self):
+        # arrange
+        mock_record = Mock(spec=logging.LogRecord)
+        formatter = OplogCsvFormatter()
+
+        # act
+        with self.assertRaises(LogRecordMissingOperationException):
+            formatter.format(record=mock_record)
 
     @staticmethod
     def _get_num_columns_for_csv_formatted_operation(operation_name: str) -> int:
