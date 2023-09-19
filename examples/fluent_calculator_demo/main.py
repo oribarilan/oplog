@@ -18,7 +18,7 @@ from oplog.formatters import OplogCsvFormatter # noqa: E402
 
 csv_op_handler = OperationHandler(
     handler=logging.FileHandler(filename=Path("oplogs.csv")),  # <-- any logging handler
-    formatter=OplogCsvFormatter(),  # <-- use your own custom formatter, or built-in ones
+    formatter=OplogCsvFormatter(),  # <-- use custom formatter, or built-in ones
 )
 logging.basicConfig(level=logging.INFO, handlers=[csv_op_handler])
 

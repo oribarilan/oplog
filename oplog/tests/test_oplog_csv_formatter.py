@@ -11,10 +11,12 @@ class TestOplogCsvFormatter(OpLogTestCase):
     def test_format_operationNameContainsSeparator_internalSeparatorIsEscaped(self):
         # arrange
         separator = ","
-        expected_num_columns = self._get_num_columns_for_csv_formatted_operation("operation_name")
+        expected_num_columns = (
+            self._get_num_columns_for_csv_formatted_operation("operation_name"))
 
         # act
-        actual_num_columns = self._get_num_columns_for_csv_formatted_operation(f"operation{separator}name")
+        actual_num_columns = (
+            self._get_num_columns_for_csv_formatted_operation(f"operation{separator}name"))
 
         # assert
         self.assertEquals(expected_num_columns, actual_num_columns)
