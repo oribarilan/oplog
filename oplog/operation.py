@@ -1,4 +1,3 @@
-from contextlib import AbstractContextManager
 import contextvars
 import datetime
 import inspect
@@ -7,14 +6,16 @@ import multiprocessing
 import threading
 import time
 import traceback
-from typing import Any, Dict, Iterable, Optional, Type
 import uuid
+from contextlib import AbstractContextManager
+from typing import Any, Dict, Iterable, Optional, Type, List
+
+from tqdm.auto import tqdm
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException
 )
-
 
 active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])
 
@@ -23,6 +24,15 @@ class Operation(AbstractContextManager):
     global_props: Optional[Dict[str, Any]] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
+        # Check if there's an active operation and assign parent-child relationship
+        self.parent_op: Optional[Operation] = None
+        self.stack_level: int = 0
+        self.child_ops: List[Operation] = []
+        if active_operation_stack.get() and active_operation_stack.get()[-1]:
+            self.parent_op = active_operation_stack.get()[-1]
+            self.stack_level = self.parent_op.stack_level + 1
+            self.parent_op.child_ops.append(self)
+
         self.name = name
         self.suppress = suppress
         self.custom_props: Dict[str, Any] = dict()
@@ -34,9 +44,6 @@ class Operation(AbstractContextManager):
         self.result: Optional[str] = None
         self.exception_type: Optional[str] = None
         self.exception_msg: Optional[str] = None
-
-        self.parent_op: Optional[Operation] = None
-        self.child_ops: Optional[Operation] = []
 
         self._logger = self._get_caller_logger()
         self.logger_name = self._logger.name
@@ -51,6 +58,9 @@ class Operation(AbstractContextManager):
         self.correlation_id: Optional[str] = None
 
         self._perf_start: Optional[float] = None
+
+        # extension - progress
+        self._progress: Optional[tqdm] = None
 
     @classmethod
     def factory_reset(cls) -> None:
@@ -76,10 +86,6 @@ class Operation(AbstractContextManager):
         self.start_time_utc = self._start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
         self._perf_start = time.perf_counter_ns()
 
-        # Check if there's an active operation and assign parent-child relationship
-        if active_operation_stack.get() and active_operation_stack.get()[-1]:
-            self.parent_op = active_operation_stack.get()[-1]
-            self.parent_op.child_ops.append(self)
         self.set_inheritable_props()
 
         # Push the current operation onto the stack
@@ -121,12 +127,14 @@ class Operation(AbstractContextManager):
 
         self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
 
-        # this will either suprress (if configured) or no, 
+        self._progressive_exit()
+
+        # this will either suppress (if configured) or no,
         # in case an error was thrown in context
         return self.suppress
 
     def __hash__(self):
-        return hash(self.op_id)
+        return hash(self.id)
 
     def __eq__(self, other):
         if isinstance(other, Operation):
@@ -163,3 +171,34 @@ class Operation(AbstractContextManager):
         if property_name in cls.global_props:
             raise GlobalOperationPropertyAlreadyExistsException(prop_name=property_name)
         cls.global_props[property_name] = value
+
+    def progressive(self, total: Optional[int] = None):
+        """
+        Makes the operation progressive, meaning it will display a progress bar.
+        Note that the progress bar may not be displayed correctly in some IDEs
+        (but will work in the terminal, notebooks, etc.).
+
+        :param total: the maximum number of steps expected for the operation to complete
+        :return: the operation itself
+        """
+        pop: Operation = self.parent_op  # to eliminate private attribute access warning
+        is_child_of_progressive = pop._progress if pop else None
+        self._progress = tqdm(
+            total=total,
+            desc=self.name,
+            leave=not is_child_of_progressive
+        )
+        return self
+
+    def progress(self, n: Optional[int] = 1):
+        if self._progress is not None:
+            self._progress.update(n)
+
+    def _progressive_exit(self):
+        if self._progress is not None:
+            if self.result != "Success":
+                self._progress.update(self._progress.total - self._progress.n)
+            self._progress.close()
+
+    def __repr__(self):
+        return f"<Operation name={self.name}>"
