@@ -8,7 +8,7 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, Optional, Type, List, Tuple
+from typing import Any, Dict, Iterable, Optional, Type, List, Union
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
@@ -28,7 +28,6 @@ class Operation(AbstractContextManager):
         self.child_ops: List[Operation] = []
         if active_operation_stack.get() and active_operation_stack.get()[-1]:
             self.parent_op = active_operation_stack.get()[-1]
-            self.parent_op.child_ops.append(self)
 
         self.name = name
         self.suppress = suppress
@@ -176,7 +175,7 @@ class Operation(AbstractContextManager):
     def __repr__(self):
         return f"<Operation name={self.name}>"
 
-    def progressable(self, iterations: Optional[Tuple[int, float]] = None, with_pbar: bool = True):
+    def progressable(self, iterations: Optional[Union[int, float]] = None, with_pbar: bool = True):
         parent_op_progress_stack = (op._progress for op in active_operation_stack.get())
         self._progress = OperationProgress(
             iterations=iterations,
@@ -185,5 +184,8 @@ class Operation(AbstractContextManager):
         )
         return self
 
-    def progress(self, n: Optional[Tuple[int, float]] = 1):
+    def get_progress(self) -> Optional[OperationProgress]:
+        return self._progress
+
+    def progress(self, n: Optional[Union[int, float]] = 1):
         self._progress.progress(n)

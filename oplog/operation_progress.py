@@ -1,13 +1,17 @@
-from typing import Optional, Final, Tuple, Iterable
+from typing import Optional, Final, Iterable, Union
 
 from tqdm.auto import tqdm
+
+
+class ProgressNotAvailableException(Exception):
+    pass
 
 
 class OperationProgress:
     PROGRESS_INDENT: Final[str] = '--'
 
     def __init__(self,
-                 iterations: Optional[Tuple[int, float]],
+                 iterations: Optional[Union[int, float]] = None,
                  pbar_descriptor: Optional[str] = None,
                  ancestors_progress: Optional[Iterable['OperationProgress']] = None,
                  ):
@@ -18,7 +22,7 @@ class OperationProgress:
          (but will work in the terminal, notebooks, etc.).
         """
         self.iterations = iterations
-        self.completion_ratio: Optional[float] = None
+        self.completion_ratio: Optional[float] = 0.0
         self._pbar: Optional[tqdm] = None
 
         if pbar_descriptor:
@@ -32,18 +36,28 @@ class OperationProgress:
                 leave=num_ancestors_pbar == 0
             )
 
-    def progress(self, n: Optional[Tuple[int, float]] = 1):
+    def progress(self, n: Union[int, float] = 1):
         if self._pbar is not None:
             self._pbar.update(n)
-        else:
-            # todo update completion ratio
-            pass
+
+        if self.iterations is not None:
+            steps_completed_thus_far = self.completion_ratio * self.iterations
+            self.completion_ratio = (steps_completed_thus_far + n) / self.iterations
+
+        if self._pbar is None and self.iterations is None:
+            raise ProgressNotAvailableException("`progress` method only has effect if either "
+                                                "total number of iterations is specified "
+                                                "or a progress bar is displayed.")
 
     def exit(self, is_successful: bool):
         if self._pbar is not None:
-            if not is_successful:
+            if is_successful and self.iterations is not None:
+                # fill progress bar
                 self._pbar.update(self._pbar.total - self._pbar.n)
             self._pbar.close()
-        else:
-            # todo update completion ratio
-            pass
+
+        if is_successful:
+            self.completion_ratio = 1.0
+        elif self.iterations is None:
+            # unknown progress
+            self.completion_ratio = None
