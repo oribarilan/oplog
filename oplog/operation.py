@@ -1,4 +1,4 @@
-import contextvars
+from contextvars import ContextVar
 import datetime
 import inspect
 import logging
@@ -8,20 +8,18 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, Optional, Type, List, Final
-
-from tqdm.auto import tqdm
+from typing import Any, Dict, Iterable, Optional, Type, List, Tuple
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException
 )
+from oplog.operation_progress import OperationProgress
 
-active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])
+active_operation_stack: ContextVar[List['Operation']] = ContextVar("active_operation_stack", default=[])
 
 
 class Operation(AbstractContextManager):
-    PROGRESS_INDENT: Final[str] = '--'
     global_props: Optional[Dict[str, Any]] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
@@ -40,6 +38,7 @@ class Operation(AbstractContextManager):
         self.end_time_utc: Optional[datetime.datetime] = None
         self.duration_ms: Optional[int] = None
         self.id = str(uuid.uuid4())
+        self.is_successful: Optional[bool] = None
         self.result: Optional[str] = None
         self.exception_type: Optional[str] = None
         self.exception_msg: Optional[str] = None
@@ -59,7 +58,7 @@ class Operation(AbstractContextManager):
         self._perf_start: Optional[float] = None
 
         # extension - progress
-        self._progress: Optional[tqdm] = None
+        self._progress: Optional[OperationProgress] = None
 
     @classmethod
     def factory_reset(cls) -> None:
@@ -113,12 +112,15 @@ class Operation(AbstractContextManager):
         if is_success:
             result = "Success"
             tb = ""
+            self.completion_ratio = 1.0
         else:
             result = "Failure"
             self.exception_type = exc_type.__name__
             self.exception_msg = str(exc_value)
             tb = traceback.extract_tb(exc_tb, limit=10).format()
+            self.completion_ratio = None
 
+        self.is_successful = is_success
         self.result = result
         self.traceback = tb
         level = logging.INFO if is_success else logging.ERROR
@@ -126,7 +128,7 @@ class Operation(AbstractContextManager):
 
         self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
 
-        self._progressive_exit()
+        self._progress.exit(is_successful=self.is_successful)
 
         # this will either suppress (if configured) or no,
         # in case an error was thrown in context
@@ -171,37 +173,17 @@ class Operation(AbstractContextManager):
             raise GlobalOperationPropertyAlreadyExistsException(prop_name=property_name)
         cls.global_props[property_name] = value
 
-    def progressive(self, total: Optional[int] = None):
-        """
-        Makes the operation progressive, meaning it will display a progress bar.
-        Note that the progress bar may not be displayed correctly in some IDEs
-        (but will work in the terminal, notebooks, etc.).
+    def __repr__(self):
+        return f"<Operation name={self.name}>"
 
-        :param total: the maximum number of steps expected for the operation to complete
-        :return: the operation itself (fluent syntax)
-        """
-        pop: Operation = self.parent_op  # to eliminate private attribute access warning
-        pbar_desc = self.name
-        is_child_of_progressive = pop._progress if pop else None
-        if is_child_of_progressive:
-            indent = len(active_operation_stack.get()) * self.PROGRESS_INDENT
-            pbar_desc = f'{indent} {pbar_desc}'
-        self._progress = tqdm(
-            total=total,
-            desc=pbar_desc,
-            leave=not is_child_of_progressive
+    def progressable(self, iterations: Optional[Tuple[int, float]] = None, with_pbar: bool = True):
+        parent_op_progress_stack = (op._progress for op in active_operation_stack.get())
+        self._progress = OperationProgress(
+            iterations=iterations,
+            pbar_descriptor=self.name if with_pbar else None,
+            ancestors_progress=parent_op_progress_stack
         )
         return self
 
-    def progress(self, n: Optional[int] = 1):
-        if self._progress is not None:
-            self._progress.update(n)
-
-    def _progressive_exit(self):
-        if self._progress is not None:
-            if self.result != "Success":
-                self._progress.update(self._progress.total - self._progress.n)
-            self._progress.close()
-
-    def __repr__(self):
-        return f"<Operation name={self.name}>"
+    def progress(self, n: Optional[Tuple[int, float]] = 1):
+        self._progress.progress(n)

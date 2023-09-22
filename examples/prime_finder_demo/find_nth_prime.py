@@ -6,7 +6,7 @@ from oplog import Operation
 
 
 def modulo(dividend, divisor):
-    with Operation(name='modulo').progressive(total=dividend) as op:
+    with Operation(name='modulo').progressable(iterations=dividend) as op:
         if divisor == 0:
             raise ZeroDivisionError()
 
@@ -20,7 +20,7 @@ def modulo(dividend, divisor):
 
 
 def is_prime(num):
-    with Operation(name='is_prime').progressive(total=num) as op:
+    with Operation(name='is_prime').progressable(iterations=num) as op:
         if num <= 1:
             return False
 
@@ -36,7 +36,7 @@ def is_prime(num):
 @click.command()
 @click.argument('n', default=10, type=int)
 def find_nth_prime(n: int) -> None:
-    with Operation(name='find_prime').progressive(total=n) as op:
+    with Operation(name='find_prime').progressable(iterations=n) as op:
         prime_count = 0
         candidate = 1
         while prime_count < n:
