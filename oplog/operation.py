@@ -8,7 +8,7 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, Optional, Type, List
+from typing import Any, Dict, Iterable, Optional, Type, List, Final
 
 from tqdm.auto import tqdm
 
@@ -21,16 +21,15 @@ active_operation_stack = contextvars.ContextVar("active_operation_stack", defaul
 
 
 class Operation(AbstractContextManager):
+    PROGRESS_INDENT: Final[str] = '--'
     global_props: Optional[Dict[str, Any]] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
         # Check if there's an active operation and assign parent-child relationship
         self.parent_op: Optional[Operation] = None
-        self.stack_level: int = 0
         self.child_ops: List[Operation] = []
         if active_operation_stack.get() and active_operation_stack.get()[-1]:
             self.parent_op = active_operation_stack.get()[-1]
-            self.stack_level = self.parent_op.stack_level + 1
             self.parent_op.child_ops.append(self)
 
         self.name = name
@@ -179,13 +178,17 @@ class Operation(AbstractContextManager):
         (but will work in the terminal, notebooks, etc.).
 
         :param total: the maximum number of steps expected for the operation to complete
-        :return: the operation itself
+        :return: the operation itself (fluent syntax)
         """
         pop: Operation = self.parent_op  # to eliminate private attribute access warning
+        pbar_desc = self.name
         is_child_of_progressive = pop._progress if pop else None
+        if is_child_of_progressive:
+            indent = len(active_operation_stack.get()) * self.PROGRESS_INDENT
+            pbar_desc = f'{indent} {pbar_desc}'
         self._progress = tqdm(
             total=total,
-            desc=self.name,
+            desc=pbar_desc,
             leave=not is_child_of_progressive
         )
         return self
