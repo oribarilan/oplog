@@ -16,11 +16,13 @@ from oplog.exceptions import (
 )
 from oplog.operation_progress import OperationProgress
 
-active_operation_stack: ContextVar[List['Operation']] = ContextVar("active_operation_stack", default=[])
+active_operation_stack: ContextVar[List['Operation']] = (
+    ContextVar("active_operation_stack", default=[])
+)
 
 
 class Operation(AbstractContextManager):
-    global_props: Optional[Dict[str, Any]] = {}
+    global_props: Dict[str, Any] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
         # Check if there's an active operation and assign parent-child relationship
@@ -28,6 +30,7 @@ class Operation(AbstractContextManager):
         self.child_ops: List[Operation] = []
         if active_operation_stack.get() and active_operation_stack.get()[-1]:
             self.parent_op = active_operation_stack.get()[-1]
+            self.parent_op.child_ops.append(self)
 
         self.name = name
         self.suppress = suppress
@@ -35,7 +38,10 @@ class Operation(AbstractContextManager):
 
         self.start_time_utc: Optional[datetime.datetime] = None
         self.end_time_utc: Optional[datetime.datetime] = None
+        self.start_time_utc_str: Optional[str] = None
+        self.end_time_utc_str: Optional[str] = None
         self.duration_ms: Optional[int] = None
+        self.duration_ns: Optional[int] = None
         self.id = str(uuid.uuid4())
         self.is_successful: Optional[bool] = None
         self.result: Optional[str] = None
@@ -75,12 +81,15 @@ class Operation(AbstractContextManager):
                 caller_module = inspect.getmodule(caller_frame[0])
                 if caller_module is not None:
                     logger = logging.getLogger(caller_module.__name__)
+
+        if logger is None:
+            logger = logging.getLogger()
         return logger
 
     def __enter__(self) -> "Operation":
-        self._start_time_utc = datetime.datetime.utcnow()
+        self.start_time_utc = datetime.datetime.utcnow()
         # time format example: 2023-06-22 06:27:53.922633
-        self.start_time_utc = self._start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
+        self.start_time_utc_str = self.start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
         self._perf_start = time.perf_counter_ns()
 
         self.set_inheritable_props()
@@ -98,8 +107,11 @@ class Operation(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.end_time_utc = datetime.datetime.utcnow()
+        self.end_time_utc_str = self.end_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
+
         perf_end = time.perf_counter_ns()
         self.duration_ms = round((perf_end - self._perf_start) / 1_000_000)
+        self.duration_ns = round(perf_end - self._perf_start)
 
         # Pop the current operation off the stack
         current_stack = active_operation_stack.get([])
@@ -127,7 +139,8 @@ class Operation(AbstractContextManager):
 
         self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
 
-        self._progress.exit(is_successful=self.is_successful)
+        if self._progress is not None:
+            self._progress.exit(is_successful=self.is_successful)
 
         # this will either suppress (if configured) or no,
         # in case an error was thrown in context
@@ -175,8 +188,11 @@ class Operation(AbstractContextManager):
     def __repr__(self):
         return f"<Operation name={self.name}>"
 
-    def progressable(self, iterations: Optional[Union[int, float]] = None, with_pbar: bool = True):
-        parent_op_progress_stack = (op._progress for op in active_operation_stack.get())
+    def progressable(self,
+                     iterations: Optional[Union[int, float]] = None,
+                     with_pbar: bool = True) -> 'Operation':
+        parent_op_progress_stack = (op._progress for op in active_operation_stack.get()
+                                    if op._progress is not None)
         self._progress = OperationProgress(
             iterations=iterations,
             pbar_descriptor=self.name if with_pbar else None,
@@ -187,5 +203,8 @@ class Operation(AbstractContextManager):
     def get_progress(self) -> Optional[OperationProgress]:
         return self._progress
 
-    def progress(self, n: Optional[Union[int, float]] = 1):
-        self._progress.progress(n)
+    def progress(self, n: Union[int, float] = 1):
+        if self._progress is not None:
+            self._progress.progress(n)
+        else:
+            raise AttributeError("Operation is not progressable")

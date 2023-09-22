@@ -6,3 +6,4 @@ ruff
 pytest
 coverage
 build
+mypy==4.7.1

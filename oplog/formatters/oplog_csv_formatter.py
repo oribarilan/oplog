@@ -4,11 +4,11 @@ from oplog.operation import Operation
 
 
 class OplogCsvFormatter(logging.Formatter):
-    def format(self, record):
+    def format(self, record) -> str:
         if hasattr(record, "oplog"):
             op: Operation = record.oplog
             csv_row = [
-                f'"{op.start_time_utc}"',
+                f'"{op.start_time_utc_str}"',
                 f'"{str(op.duration_ms)}"',
                 f'"{op.name}"',
                 f'"{op.correlation_id}"',

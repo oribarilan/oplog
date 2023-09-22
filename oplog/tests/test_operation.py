@@ -1,7 +1,7 @@
 import inspect
 import logging
 from unittest.mock import patch
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException

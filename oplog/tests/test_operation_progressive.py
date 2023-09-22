@@ -42,7 +42,7 @@ class TestOperationProgress(OpLogTestCase):
             op.progress()
 
             # assert
-            self.assertEquals(op.get_progress().completion_ratio, 0.1)
+            self.assertEqual(op.get_progress().completion_ratio, 0.1)
 
     def test_progress_withIterations_completionRateUpdatedTwice(self):
         # arrange & act
@@ -51,7 +51,7 @@ class TestOperationProgress(OpLogTestCase):
             op.progress()
 
             # assert
-            self.assertEquals(op.get_progress().completion_ratio, 0.2)
+            self.assertEqual(op.get_progress().completion_ratio, 0.2)
 
     def test_progress_withIterations_completionRateUpdatedExplicitly(self):
         # arrange & act
@@ -59,7 +59,7 @@ class TestOperationProgress(OpLogTestCase):
             op.progress(n=5)
 
             # assert
-            self.assertEquals(op.get_progress().completion_ratio, 0.5)
+            self.assertEqual(op.get_progress().completion_ratio, 0.5)
 
     def test_progress_withIterations_completionRateUpdatedOnExit(self):
         # arrange & act
@@ -67,7 +67,7 @@ class TestOperationProgress(OpLogTestCase):
             op.progress(n=5)
 
         # assert
-        self.assertEquals(op.get_progress().completion_ratio, 1.0)
+        self.assertEqual(op.get_progress().completion_ratio, 1.0)
 
     def test_progress_withIterationsExceptionThrown_completionRateCaptured(self):
         # arrange & act
@@ -76,7 +76,7 @@ class TestOperationProgress(OpLogTestCase):
             raise Exception()
 
         # assert
-        self.assertEquals(op.get_progress().completion_ratio, 0.2)
+        self.assertEqual(op.get_progress().completion_ratio, 0.2)
 
     def test_progress_withoutIterationsExceptionThrown_completionRateUnknown(self):
         # arrange & act
@@ -85,7 +85,7 @@ class TestOperationProgress(OpLogTestCase):
             raise Exception()
 
         # assert
-        self.assertEquals(op.get_progress().completion_ratio, None)
+        self.assertEqual(op.get_progress().completion_ratio, None)
 
     def test_progress_noIterationsNoPbar_progressThrowsException(self):
         # arrange & act
