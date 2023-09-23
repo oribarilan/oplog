@@ -1,7 +1,7 @@
 import inspect
 import logging
 from unittest.mock import patch
-from parameterized import parameterized
+from parameterized import parameterized  # type: ignore
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException
@@ -18,9 +18,9 @@ class OperationExceptionTest(Exception):
 class TestOperation(OpLogTestCase):
     def test_operation_loggerLogCalled(self):
         with patch.object(
-            logging.Logger,
-            logging.Logger.log.__name__,
-            return_value=None) as mock_log:
+                logging.Logger,
+                logging.Logger.log.__name__,
+                return_value=None) as mock_log:
             with Operation(name="test_op") as op:
                 pass
 
@@ -29,13 +29,13 @@ class TestOperation(OpLogTestCase):
             msg="operation logged",
             extra={"oplog": op},
         )
-        
+
     def test_operation_loggerIsOfTheCaller(self):
         expected_logger = logging.getLogger(inspect.getmodule(TestOperation).__name__)
-        
+
         with Operation(name="test_op") as op:
-                pass
-        
+            pass
+
         actual_logger = op._logger
         self.assertEqual(expected_logger, actual_logger)
 
@@ -85,15 +85,15 @@ class TestOperation(OpLogTestCase):
         prop_name = "test_global_prop"
         prop_value_1 = 1
         prop_value_2 = 2
-        
+
         with self.assertRaises(GlobalOperationPropertyAlreadyExistsException):
             Operation.add_global(prop_name=prop_name, value=prop_value_1)
             Operation.add_global(prop_name=prop_name, value=prop_value_2)
-            
+
     def test_addGlobal_unsupportedType_raises(self):
         prop_name = "test_global_prop"
-        prop_value = { "test": 1 }
-        
+        prop_value = {"test": 1}
+
         with self.assertRaises(TypeError):
             Operation.add_global(prop_name=prop_name, value=prop_value)
 
@@ -148,7 +148,7 @@ class TestOperation(OpLogTestCase):
         op = self.get_op("test_op")
         self.assertEqual(op.exception_type, "OperationExceptionTest")
         self.assertEqual(op.exception_msg, "test exception")
-    
+
     def test_operation_exceptionThrownWitoutSuppression_failedOperationLoggedExceptionReraised(self):  # noqa: E501
         with self.assertRaises(OperationExceptionTest):
             with Operation(name="test_op", suppress=False) as op:
@@ -175,7 +175,7 @@ class TestOperation(OpLogTestCase):
         op = self.get_op("test_op")
         self.assertEqual(op.exception_type, "OperationExceptionTest")
         self.assertEqual(op.exception_msg, "test exception")
-        
+
     def test_operation_failureWithSuppression_exceptionLogged(self):
         with Operation(name="test_op", suppress=True) as op:
             raise OperationExceptionTest("test exception")

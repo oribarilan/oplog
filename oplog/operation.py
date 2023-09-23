@@ -1,5 +1,4 @@
-from contextlib import AbstractContextManager
-import contextvars
+from contextvars import ContextVar
 import datetime
 import inspect
 import logging
@@ -7,36 +6,47 @@ import multiprocessing
 import threading
 import time
 import traceback
-from typing import Any, Dict, Iterable, Optional, Type
 import uuid
+from contextlib import AbstractContextManager
+from typing import Any, Dict, Iterable, Optional, Type, List, Union
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException
 )
+from oplog.operation_progress import OperationProgress
 
-
-active_operation_stack = contextvars.ContextVar("active_operation_stack", default=[])
+active_operation_stack: ContextVar[List['Operation']] = (
+    ContextVar("active_operation_stack", default=[])
+)
 
 
 class Operation(AbstractContextManager):
-    global_props: Optional[Dict[str, Any]] = {}
+    global_props: Dict[str, Any] = {}
 
     def __init__(self, name: str, suppress: bool = False) -> None:
+        # Check if there's an active operation and assign parent-child relationship
+        self.parent_op: Optional[Operation] = None
+        self.child_ops: List[Operation] = []
+        if active_operation_stack.get() and active_operation_stack.get()[-1]:
+            self.parent_op = active_operation_stack.get()[-1]
+            self.parent_op.child_ops.append(self)
+
         self.name = name
         self.suppress = suppress
         self.custom_props: Dict[str, Any] = dict()
 
         self.start_time_utc: Optional[datetime.datetime] = None
         self.end_time_utc: Optional[datetime.datetime] = None
+        self.start_time_utc_str: Optional[str] = None
+        self.end_time_utc_str: Optional[str] = None
         self.duration_ms: Optional[int] = None
+        self.duration_ns: Optional[int] = None
         self.id = str(uuid.uuid4())
+        self.is_successful: Optional[bool] = None
         self.result: Optional[str] = None
         self.exception_type: Optional[str] = None
         self.exception_msg: Optional[str] = None
-
-        self.parent_op: Optional[Operation] = None
-        self.child_ops: Optional[Operation] = []
 
         self._logger = self._get_caller_logger()
         self.logger_name = self._logger.name
@@ -51,6 +61,9 @@ class Operation(AbstractContextManager):
         self.correlation_id: Optional[str] = None
 
         self._perf_start: Optional[float] = None
+
+        # extension - progress
+        self._progress: Optional[OperationProgress] = None
 
     @classmethod
     def factory_reset(cls) -> None:
@@ -68,18 +81,17 @@ class Operation(AbstractContextManager):
                 caller_module = inspect.getmodule(caller_frame[0])
                 if caller_module is not None:
                     logger = logging.getLogger(caller_module.__name__)
+
+        if logger is None:
+            logger = logging.getLogger()
         return logger
 
     def __enter__(self) -> "Operation":
-        self._start_time_utc = datetime.datetime.utcnow()
+        self.start_time_utc = datetime.datetime.utcnow()
         # time format example: 2023-06-22 06:27:53.922633
-        self.start_time_utc = self._start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
+        self.start_time_utc_str = self.start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
         self._perf_start = time.perf_counter_ns()
 
-        # Check if there's an active operation and assign parent-child relationship
-        if active_operation_stack.get() and active_operation_stack.get()[-1]:
-            self.parent_op = active_operation_stack.get()[-1]
-            self.parent_op.child_ops.append(self)
         self.set_inheritable_props()
 
         # Push the current operation onto the stack
@@ -95,8 +107,11 @@ class Operation(AbstractContextManager):
 
     def __exit__(self, exc_type, exc_value, exc_tb):
         self.end_time_utc = datetime.datetime.utcnow()
+        self.end_time_utc_str = self.end_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
+
         perf_end = time.perf_counter_ns()
         self.duration_ms = round((perf_end - self._perf_start) / 1_000_000)
+        self.duration_ns = round(perf_end - self._perf_start)
 
         # Pop the current operation off the stack
         current_stack = active_operation_stack.get([])
@@ -108,12 +123,15 @@ class Operation(AbstractContextManager):
         if is_success:
             result = "Success"
             tb = ""
+            self.completion_ratio = 1.0
         else:
             result = "Failure"
             self.exception_type = exc_type.__name__
             self.exception_msg = str(exc_value)
             tb = traceback.extract_tb(exc_tb, limit=10).format()
+            self.completion_ratio = None
 
+        self.is_successful = is_success
         self.result = result
         self.traceback = tb
         level = logging.INFO if is_success else logging.ERROR
@@ -121,12 +139,15 @@ class Operation(AbstractContextManager):
 
         self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
 
-        # this will either suprress (if configured) or no, 
+        if self._progress is not None:
+            self._progress.exit(is_successful=self.is_successful)
+
+        # this will either suppress (if configured) or no,
         # in case an error was thrown in context
         return self.suppress
 
     def __hash__(self):
-        return hash(self.op_id)
+        return hash(self.id)
 
     def __eq__(self, other):
         if isinstance(other, Operation):
@@ -163,3 +184,27 @@ class Operation(AbstractContextManager):
         if property_name in cls.global_props:
             raise GlobalOperationPropertyAlreadyExistsException(prop_name=property_name)
         cls.global_props[property_name] = value
+
+    def __repr__(self):
+        return f"<Operation name={self.name}>"
+
+    def progressable(self,
+                     iterations: Optional[Union[int, float]] = None,
+                     with_pbar: bool = True) -> 'Operation':
+        parent_op_progress_stack = (op._progress for op in active_operation_stack.get()
+                                    if op._progress is not None)
+        self._progress = OperationProgress(
+            iterations=iterations,
+            pbar_descriptor=self.name if with_pbar else None,
+            ancestors_progress=parent_op_progress_stack
+        )
+        return self
+
+    def get_progress(self) -> Optional[OperationProgress]:
+        return self._progress
+
+    def progress(self, n: Union[int, float] = 1):
+        if self._progress is not None:
+            self._progress.progress(n)
+        else:
+            raise AttributeError("Operation is not progressable")

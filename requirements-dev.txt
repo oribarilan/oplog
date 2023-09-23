@@ -6,3 +6,5 @@ ruff
 pytest
 coverage
 build
+mypy==1.5.1
+types-tqdm==4.66.0.2

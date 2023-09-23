@@ -7,7 +7,8 @@ class VerboseOplogLineFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         if hasattr(record, "oplog"):
             op: Operation = record.oplog
-            msg = f"{op.start_time_utc} ({op.duration_ms}ms): [{op.name} / {op.result}]"
+            msg = (f"{op.start_time_utc_str} ({op.duration_ms}ms): "
+                   f"[{op.name} / {op.result}]")
             if op.exception_type:
                 msg += f" {op.exception_type}: {op.exception_msg}"
             
