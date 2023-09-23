@@ -75,3 +75,17 @@ markdown_extensions:
 
 copyright: |
   &copy; 2023 <a href="https://github.com/oribarilan"  target="_blank" rel="noopener">Ori Bar-ilan</a>
+
+nav:
+    - index.md
+    - Tutorial:
+        - Getting Started: tutorial/getting_started.md
+        - Operation Properties: tutorial/operation_properties.md
+        - Progressable Operations: tutorial/progressable_operations.md
+        - Examples: tutorial/examples.md
+    - Contribution:
+        - Contribution: contribution/contribution.md
+        - Development: contribution/development.md
+        - Active Backlog: contribution/active_backlog.md
+    - Others:
+      - alternatives.md
