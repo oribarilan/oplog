@@ -153,13 +153,11 @@ class Operation(AbstractContextManager):
         if is_success:
             result = "Success"
             tb = ""
-            self.completion_ratio = 1.0
         else:
             result = "Failure"
             self.exception_type = exc_type.__name__
             self.exception_msg = str(exc_value)
             tb = traceback.extract_tb(exc_tb, limit=10).format()
-            self.completion_ratio = None
 
         self.is_successful = is_success
         self.result = result
@@ -236,13 +234,6 @@ class Operation(AbstractContextManager):
 
     def get_progress(self) -> Optional[OperationProgress]:
         return self._progress
-
-    @property
-    def completion_ratio(self) -> Optional[float]:
-        if self._progress is not None:
-            return self._progress.completion_ratio\
-
-        raise AttributeError("Operation is not progressable")
 
     def progress(self, n: Union[int, float] = 1):
         if self._progress is not None:
