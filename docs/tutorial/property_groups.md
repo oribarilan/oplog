@@ -1,4 +1,4 @@
-# Common Concepts
+# Property Groups
 
 ## Meta Properties (Operation metadata)
 
@@ -7,9 +7,9 @@ They are managed automatically to every operation, and do not require additional
 
 ### Correlation ID
 
-When investigating issues, developers find themselves needing to correlate between different operations. For example, when a user reports a bug, the developer will want to find all relevant log messages to help investigate and triage the bug. This is where `correlation_id` comes into play.
+`correlation_id` is a special kind of meta property. When investigating issues, developers find themselves needing to correlate between different operations. For example, when a user reports a bug, the developer will want to find all relevant log messages to help investigate and triage the bug. This is where `correlation_id` comes into play.
 
-`correlation_id` is a special kind of meta property that is inherited by child operations from their parent operation, within the same execution thread. It can be used to correlate between all nested operations. These nested (or child) operations will have the same correlation ID as the root (or parent) operation.
+`correlation_id` is inherited by child operations from their parent operation, within the same execution thread. It can be used to correlate between all nested operations. These nested (or child) operations will have the same correlation ID as the root (or parent) operation.
 
 The most common use case for `correlation_id` is for web server request handling. All operations that were executed within the same request, will be easily correlateable using the `correlation_id`.
 

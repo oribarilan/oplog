@@ -1,12 +1,13 @@
 import inspect
 import logging
-from unittest.mock import patch
+from unittest.mock import patch, call
 from parameterized import parameterized  # type: ignore
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException
 )
 from oplog.operation import Operation
+from oplog.operation_step import OperationStep
 
 from oplog.tests.logged_test_case import OpLogTestCase
 
@@ -26,7 +27,7 @@ class TestOperation(OpLogTestCase):
 
         mock_log.assert_called_once_with(
             level=logging.getLevelName(op.log_level),
-            msg="operation logged",
+            msg="oplog: operation exit",
             extra={"oplog": op},
         )
 
@@ -230,3 +231,46 @@ class TestOperation(OpLogTestCase):
 
         self.assertEqual(child_op1.correlation_id, parent_op.correlation_id)
         self.assertEqual(child_op2.correlation_id, parent_op.correlation_id)
+
+    def test_operation_onStart_operationLoggedOnEnter(self):
+        with patch.object(
+                logging.Logger,
+                logging.Logger.log.__name__,
+                return_value=None) as mock_log:
+            with Operation(name="test_op", on_start=True) as op:
+                mock_log.assert_called_once_with(
+                    level=logging.INFO,
+                    msg="oplog: operation start",
+                    extra={"oplog": op},
+                )
+                self.assertEqual(op.step, OperationStep.START)
+                pass
+
+    def test_operation_onStart_operationLoggedOnEnterAndExit(self):
+        with patch.object(
+                logging.Logger,
+                logging.Logger.log.__name__,
+                return_value=None) as mock_log:
+            with Operation(name="test_op", on_start=True) as op:
+                pass
+
+            mock_log.assert_has_calls([
+                call(
+                    level=logging.INFO,
+                    msg="oplog: operation start",
+                    extra={"oplog": op}
+                ),
+                call(
+                    level=logging.getLevelName(op.log_level),
+                    msg="oplog: operation exit",
+                    extra={"oplog": op}
+                )
+            ], any_order=False)
+            self.assertEqual(op.step, OperationStep.END)
+
+    def test_operation_failure_operationStepSetToEnd(self):
+        try:
+            with Operation(name="test_op") as op:
+                raise OperationExceptionTest("test exception")
+        except OperationExceptionTest:
+            self.assertEqual(op.step, OperationStep.END)

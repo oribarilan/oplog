@@ -30,11 +30,7 @@ class OperationProgress:
             num_ancestors_pbar = len([
                 p for p in ancestors_progress if p._pbar is not None
             ])
-            indent = (
-                    (num_ancestors_pbar * self.PROGRESS_INDENT) +
-                    (num_ancestors_pbar * ' ')
-            )
-            indent_pbar_desc = f'{indent}{pbar_descriptor}'
+            indent_pbar_desc = self._format_pbar(pbar_descriptor, num_ancestors_pbar)
             pbar: Optional[tqdm] = tqdm(
                 total=iterations,
                 desc=indent_pbar_desc,
@@ -45,6 +41,11 @@ class OperationProgress:
             pbar = None
 
         self._pbar: Optional[tqdm] = pbar
+
+    def _format_pbar(self, pbar_descriptor: str, nesting_level: int):
+        indentation = "│   " * nesting_level
+        formatted_line = f"{indentation}├── {pbar_descriptor}"
+        return formatted_line
 
     def progress(self, n: Union[int, float] = 1):
         if self._pbar is not None:

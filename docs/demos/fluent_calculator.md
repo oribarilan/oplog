@@ -1,8 +1,11 @@
-# Examples
+# Fluent Calculator
+
+**Application Scenario:** Logic App (e.g., Worker)
+
+**Telemetry Form:** Structured CSV Telemetry
 
 🚧 Work in progress. Please come back later. 🚧
 
-## Fluent Calculator
 
 This demo shows how to use oplog for structured logging. The most common benefit of structured logs is the ability to query them in a performant way, as well as creating dashboards and monitors on top of them. Usually, this is achieved by ingesting the logs into a columnar database, such as [AWS CloudWatch](https://aws.amazon.com/cloudwatch/), [Google BigQuery](https://cloud.google.com/bigquery), [Azure Data Explorer](https://azure.microsoft.com/en-us/products/data-explorer), [Splunk](https://www.splunk.com/) and more.
 

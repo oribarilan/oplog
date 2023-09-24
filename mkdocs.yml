@@ -75,3 +75,22 @@ markdown_extensions:
 
 copyright: |
   &copy; 2023 <a href="https://github.com/oribarilan"  target="_blank" rel="noopener">Ori Bar-ilan</a>
+
+nav:
+    - index.md
+    - Tutorial:
+        - Getting Started: tutorial/getting_started.md
+        - Operation: tutorial/operation.md
+        - Operated: tutorial/operated.md
+        - Property Groups: tutorial/property_groups.md
+        - Progressable Operations: tutorial/progressable_operations.md
+    - Demos:
+        - Fluent Calculator (Logic w/ CSV Telemetry): demos/fluent_calculator.md
+        - TBD (Web API w/ Verbose Textual Logs): demos/tbd.md
+        - Find Nth Prime (CLI Tool w/ Progress Bars): demos/find_nth_prime.md
+    - Contribution:
+        - Contribution: contribution/contribution.md
+        - Development: contribution/development.md
+        - Active Backlog: contribution/active_backlog.md
+    - Others:
+      - alternatives.md

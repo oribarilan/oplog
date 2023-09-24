@@ -15,6 +15,7 @@ from oplog.exceptions import (
     OperationPropertyAlreadyExistsException
 )
 from oplog.operation_progress import OperationProgress
+from oplog.operation_step import OperationStep
 
 active_operation_stack: ContextVar[List['Operation']] = (
     ContextVar("active_operation_stack", default=[])
@@ -24,7 +25,22 @@ active_operation_stack: ContextVar[List['Operation']] = (
 class Operation(AbstractContextManager):
     global_props: Dict[str, Any] = {}
 
-    def __init__(self, name: str, suppress: bool = False) -> None:
+    def __init__(self,
+                 name: str,
+                 suppress: bool = False,
+                 on_start: bool = False) -> None:
+        """
+        Initialize a new operation, to be used as a context manager,
+        and create a context-rich operation log, to be handled by
+         `oplog.handlers.OperationLogHandler`.
+        :param name: The name of the operation.
+        :param suppress: if True, the context manager will suppress
+        any exception thrown in the context. Otherwise, the exception
+        will be raised. Default is False. Operation metadata will be set properly
+        regardless of this flag (e.g., failed operation).
+        :param on_start: if True, the operation will be logged on start
+        (as well as on exit).
+        """
         # Check if there's an active operation and assign parent-child relationship
         self.parent_op: Optional[Operation] = None
         self.child_ops: List[Operation] = []
@@ -34,6 +50,7 @@ class Operation(AbstractContextManager):
 
         self.name = name
         self.suppress = suppress
+        self._on_start = on_start
         self.custom_props: Dict[str, Any] = dict()
 
         self.start_time_utc: Optional[datetime.datetime] = None
@@ -43,6 +60,7 @@ class Operation(AbstractContextManager):
         self.duration_ms: Optional[int] = None
         self.duration_ns: Optional[int] = None
         self.id = str(uuid.uuid4())
+        self.step: Optional[OperationStep] = None
         self.is_successful: Optional[bool] = None
         self.result: Optional[str] = None
         self.exception_type: Optional[str] = None
@@ -50,6 +68,7 @@ class Operation(AbstractContextManager):
 
         self._logger = self._get_caller_logger()
         self.logger_name = self._logger.name
+        self.log_level: Optional[str] = None
 
         current_proc = multiprocessing.current_process()
         self.process_name = current_proc.name
@@ -92,10 +111,19 @@ class Operation(AbstractContextManager):
         self.start_time_utc_str = self.start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
         self._perf_start = time.perf_counter_ns()
 
+        self.step = OperationStep.START
+
         self.set_inheritable_props()
 
         # Push the current operation onto the stack
         active_operation_stack.set(active_operation_stack.get([]) + [self])
+
+        if self._on_start:
+            self._logger.log(
+                level=logging.INFO,
+                msg="oplog: operation start",
+                extra={"oplog": self}
+            )
 
         return self
 
@@ -113,6 +141,8 @@ class Operation(AbstractContextManager):
         self.duration_ms = round((perf_end - self._perf_start) / 1_000_000)
         self.duration_ns = round(perf_end - self._perf_start)
 
+        self.step = OperationStep.END
+
         # Pop the current operation off the stack
         current_stack = active_operation_stack.get([])
         if current_stack:
@@ -123,13 +153,11 @@ class Operation(AbstractContextManager):
         if is_success:
             result = "Success"
             tb = ""
-            self.completion_ratio = 1.0
         else:
             result = "Failure"
             self.exception_type = exc_type.__name__
             self.exception_msg = str(exc_value)
             tb = traceback.extract_tb(exc_tb, limit=10).format()
-            self.completion_ratio = None
 
         self.is_successful = is_success
         self.result = result
@@ -137,7 +165,11 @@ class Operation(AbstractContextManager):
         level = logging.INFO if is_success else logging.ERROR
         self.log_level = logging.getLevelName(level)
 
-        self._logger.log(level=level, msg="operation logged", extra={"oplog": self})
+        self._logger.log(
+            level=level,
+            msg="oplog: operation exit",
+            extra={"oplog": self}
+        )
 
         if self._progress is not None:
             self._progress.exit(is_successful=self.is_successful)
