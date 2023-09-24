@@ -10,9 +10,11 @@ If you have a feature request, please open an issue, as described in [Contributi
 ## DevOps (prioritized)
 
 - Justfile
+- doc strings to Mkdocs: https://github.com/mkdocstrings/mkdocstrings
+- doc string enforcement
+- Poetry
 - Precommit Hooks
 - Check push policy
-- Poetry
 - Docker
 - Dev Container
-- Coverage % in build
+- Coverage % in badge (currently shows pass/fail)
