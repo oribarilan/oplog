@@ -1,4 +1,4 @@
-# Operation Properties
+# Property Groups
 
 ## Meta Properties (Operation metadata)
 

@@ -156,7 +156,7 @@ cython_debug/
 sandbox.py
 
 # macOS
-.DS_Store
+**/.DS_Store
 
 # PyCharm Below!
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

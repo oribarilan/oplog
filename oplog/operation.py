@@ -237,6 +237,13 @@ class Operation(AbstractContextManager):
     def get_progress(self) -> Optional[OperationProgress]:
         return self._progress
 
+    @property
+    def completion_ratio(self) -> Optional[float]:
+        if self._progress is not None:
+            return self._progress.completion_ratio\
+
+        raise AttributeError("Operation is not progressable")
+
     def progress(self, n: Union[int, float] = 1):
         if self._progress is not None:
             self._progress.progress(n)
