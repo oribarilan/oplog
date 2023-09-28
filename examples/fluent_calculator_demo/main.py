@@ -47,17 +47,18 @@ class FluentCalculator:
         return self
     
     @Operated()
-    def get_result(self):
+    def calc(self):
         time.sleep(1)
         return self.value
 
 
-try:
-    with Operation("second_calc"):
-        result2 = FluentCalculator().add(5).divide(0).get_result()
-except ZeroDivisionError:
-    pass
-    
-with Operation("first_calc"):
-    result1 = FluentCalculator().add(5).subtract(3).get_result()
+if __name__ == "__main__":
+    try:
+        with Operation("second_calc"):
+            result2 = FluentCalculator().add(5).divide(0).calc()
+    except ZeroDivisionError:
+        pass
+
+    with Operation("first_calc"):
+        result1 = FluentCalculator().add(5).subtract(3).calc()
 

@@ -8,7 +8,7 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, Optional, Type, List, Union
+from typing import Any, Dict, Iterable, Optional, Type, List, Union, Callable
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
@@ -24,6 +24,12 @@ active_operation_stack: ContextVar[List['Operation']] = (
 
 class Operation(AbstractContextManager):
     global_props: Dict[str, Any] = {}
+    _serializer: Optional[Callable[['Operation'], str]] = None
+
+    @classmethod
+    def config(cls, serializer: Callable[['Operation'], str]) -> Type['Operation']:
+        cls._serializer = serializer
+        return cls
 
     def __init__(self,
                  name: str,
@@ -104,6 +110,14 @@ class Operation(AbstractContextManager):
         if logger is None:
             logger = logging.getLogger()
         return logger
+
+    def __str__(self):
+        if self._serializer:
+            return self.__class__._serializer(self)
+
+        msg = (f"{self.start_time_utc_str} ({self.duration_ms}ms): "
+               f"[{self.name} / {self.result}]")
+        return msg
 
     def __enter__(self) -> "Operation":
         self.start_time_utc = datetime.datetime.utcnow()
