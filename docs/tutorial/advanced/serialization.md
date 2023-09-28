@@ -13,6 +13,8 @@ A common example is `pytest`.
 `pytest` uses the `str` representation of the operation to display the operation in the terminal,
 most commonly used to display errors (and warning) during tests.
 
+You can see an example for the support in `pytest` in [test_fluent_calculator.py](https://github.com/oribarilan/oplog/blob/main/examples/fluent_calculator_demo/test_fluent_calculator.py)
+
 Although this is supported, developers may want to override the default string serialization of operations.
 `pytest` has limited formatting options (read more about it in [pytest: How to manage logging](https://docs.pytest.org/en/7.1.x/how-to/logging.html).
 so `oplog` provides a way to override the default string serialization of operations.
