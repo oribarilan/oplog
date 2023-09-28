@@ -1,4 +1,4 @@
-# Progressable Operations
+# Progressable
 
 Progressable operations are operations that can report their progress. 
 This is useful for long-running operations (e.g., with multiple IO calls or numerous iterations).
