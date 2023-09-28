@@ -23,11 +23,11 @@ repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 sys.path.append(repository_root)
 
 from oplog import Operation, Operated, OperationHandler  # noqa: E402
-from oplog.formatters import VerboseOplogLineFormatter  # noqa: E402
+from oplog.formatters import VerboseOperationFormatter  # noqa: E402
 
 stream_op_handler = OperationHandler(
     handler=logging.StreamHandler(),  # <-- any logging handler
-    formatter=VerboseOplogLineFormatter(),  # <-- custom formatter or built-in ones
+    formatter=VerboseOperationFormatter(),  # <-- custom formatter or built-in ones
 )
 logging.basicConfig(level=logging.INFO, handlers=[stream_op_handler])
 

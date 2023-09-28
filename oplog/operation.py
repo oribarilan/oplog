@@ -27,9 +27,16 @@ class Operation(AbstractContextManager):
     _serializer: Optional[Callable[['Operation'], str]] = None
 
     @classmethod
-    def config(cls, serializer: Callable[['Operation'], str]) -> Type['Operation']:
+    def config(cls, serializer: Callable[['Operation'], str]) -> None:
+        """
+        Configure global behavior of all operations.
+
+        :param serializer: A function that receives an operation
+        and returns a string, to be formatted where relevant.
+        :return:
+        """
+        # Any attributes that are set here should be cleaned in `factory_reset`
         cls._serializer = serializer
-        return cls
 
     def __init__(self,
                  name: str,
@@ -93,6 +100,7 @@ class Operation(AbstractContextManager):
     @classmethod
     def factory_reset(cls) -> None:
         cls.global_props = {}
+        cls._serializer = None
 
     @classmethod
     def _get_caller_logger(cls) -> logging.Logger:
@@ -135,7 +143,7 @@ class Operation(AbstractContextManager):
         if self._on_start:
             self._logger.log(
                 level=logging.INFO,
-                msg="oplog: operation start",
+                msg=str(self),
                 extra={"oplog": self}
             )
 
@@ -181,7 +189,7 @@ class Operation(AbstractContextManager):
 
         self._logger.log(
             level=level,
-            msg="oplog: operation exit",
+            msg=str(self),
             extra={"oplog": self}
         )
 
@@ -192,10 +200,10 @@ class Operation(AbstractContextManager):
         # in case an error was thrown in context
         return self.suppress
 
-    def __hash__(self):
+    def __hash__(self):  # pragma: no cover
         return hash(self.id)
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # pragma: no cover
         if isinstance(other, Operation):
             return other.id == self.id
         return False
@@ -231,7 +239,7 @@ class Operation(AbstractContextManager):
             raise GlobalOperationPropertyAlreadyExistsException(prop_name=property_name)
         cls.global_props[property_name] = value
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return f"<Operation name={self.name}>"
 
     def progressable(self,

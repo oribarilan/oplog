@@ -26,7 +26,7 @@ jobs:
 
       - name: Create coverage report
         run: |
-          coverage run --omit 'oplog/tests/*','*/__pycache__/*' -m pytest
+          coverage run --omit 'oplog/tests/*','*/__pycache__/*','examples' -m pytest --ignore=examples
           coverage xml -o coverage.xml
 
       - name: Upload coverage report

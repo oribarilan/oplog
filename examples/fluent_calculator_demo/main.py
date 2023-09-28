@@ -13,12 +13,12 @@ repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 sys.path.append(repository_root)
 
 from oplog import Operated, Operation, OperationHandler # noqa: E402
-from oplog.formatters import OplogCsvFormatter # noqa: E402
+from oplog.formatters import CsvOperationFormatter # noqa: E402
 
 
 csv_op_handler = OperationHandler(
     handler=logging.FileHandler(filename=Path("oplogs.csv")),  # <-- any logging handler
-    formatter=OplogCsvFormatter(),  # <-- use custom formatter, or built-in ones
+    formatter=CsvOperationFormatter(),  # <-- use custom formatter, or built-in ones
 )
 logging.basicConfig(level=logging.INFO, handlers=[csv_op_handler])
 

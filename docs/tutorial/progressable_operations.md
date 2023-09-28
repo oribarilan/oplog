@@ -7,7 +7,7 @@ Then, progress is reported using the `progress()` method.
 
 ## Progress Bar
 By default, progressable operations also display a progress bar (powered by [tqdm](https://github.com/tqdm/tqdm)), 
-which can be toggled on and off using the `with_pbar` flag (`Operation(...).progressable(with_pbar=False)`).
+which can be toggled off using the `with_pbar` flag (`Operation(...).progressable(with_pbar=False)`).
 
 Nested progressable operations will display nested progress bars nicely, with no additional configuration:
 
