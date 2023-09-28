@@ -1,6 +1,16 @@
 import pytest
+import os
+import sys
 
-from examples.fluent_calculator_demo.main import FluentCalculator
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the path to the repository root directory (one level up)
+repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+
+# Add the repository root directory to the Python path
+sys.path.append(repository_root)
+
+
+from examples.fluent_calculator_demo.main import FluentCalculator  # noqa: E402
 
 
 @pytest.fixture

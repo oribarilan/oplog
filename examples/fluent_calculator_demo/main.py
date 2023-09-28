@@ -12,8 +12,8 @@ repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 # Add the repository root directory to the Python path
 sys.path.append(repository_root)
 
-from oplog import Operated, Operation, OperationHandler # noqa: E402
-from oplog.formatters import CsvOperationFormatter # noqa: E402
+from oplog import Operated, Operation, OperationHandler  # noqa: E402
+from oplog.formatters import CsvOperationFormatter  # noqa: E402
 
 
 csv_op_handler = OperationHandler(
