@@ -12,13 +12,13 @@ repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 # Add the repository root directory to the Python path
 sys.path.append(repository_root)
 
-from oplog import Operated, Operation, OperationHandler # noqa: E402
-from oplog.formatters import OplogCsvFormatter # noqa: E402
+from oplog import Operated, Operation, OperationHandler  # noqa: E402
+from oplog.formatters import CsvOperationFormatter  # noqa: E402
 
 
 csv_op_handler = OperationHandler(
     handler=logging.FileHandler(filename=Path("oplogs.csv")),  # <-- any logging handler
-    formatter=OplogCsvFormatter(),  # <-- use custom formatter, or built-in ones
+    formatter=CsvOperationFormatter(),  # <-- use custom formatter, or built-in ones
 )
 logging.basicConfig(level=logging.INFO, handlers=[csv_op_handler])
 
@@ -47,17 +47,18 @@ class FluentCalculator:
         return self
     
     @Operated()
-    def get_result(self):
+    def calc(self):
         time.sleep(1)
         return self.value
 
 
-try:
-    with Operation("second_calc"):
-        result2 = FluentCalculator().add(5).divide(0).get_result()
-except ZeroDivisionError:
-    pass
-    
-with Operation("first_calc"):
-    result1 = FluentCalculator().add(5).subtract(3).get_result()
+if __name__ == "__main__":
+    try:
+        with Operation("second_calc"):
+            result2 = FluentCalculator().add(5).divide(0).calc()
+    except ZeroDivisionError:
+        pass
+
+    with Operation("first_calc"):
+        result1 = FluentCalculator().add(5).subtract(3).calc()
 

@@ -1,6 +1,6 @@
 import inspect
 import logging
-from unittest.mock import patch, call
+from unittest.mock import patch, call, ANY, Mock
 from parameterized import parameterized  # type: ignore
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
@@ -27,7 +27,7 @@ class TestOperation(OpLogTestCase):
 
         mock_log.assert_called_once_with(
             level=logging.getLevelName(op.log_level),
-            msg="oplog: operation exit",
+            msg=str(op),
             extra={"oplog": op},
         )
 
@@ -240,7 +240,7 @@ class TestOperation(OpLogTestCase):
             with Operation(name="test_op", on_start=True) as op:
                 mock_log.assert_called_once_with(
                     level=logging.INFO,
-                    msg="oplog: operation start",
+                    msg=str(op),
                     extra={"oplog": op},
                 )
                 self.assertEqual(op.step, OperationStep.START)
@@ -257,12 +257,12 @@ class TestOperation(OpLogTestCase):
             mock_log.assert_has_calls([
                 call(
                     level=logging.INFO,
-                    msg="oplog: operation start",
+                    msg=ANY,
                     extra={"oplog": op}
                 ),
                 call(
                     level=logging.getLevelName(op.log_level),
-                    msg="oplog: operation exit",
+                    msg=str(op),
                     extra={"oplog": op}
                 )
             ], any_order=False)
@@ -274,3 +274,31 @@ class TestOperation(OpLogTestCase):
                 raise OperationExceptionTest("test exception")
         except OperationExceptionTest:
             self.assertEqual(op.step, OperationStep.END)
+
+    def test_progress_isNotProgressable_errorRaised(self):
+        with self.assertRaises(AttributeError):
+            with Operation(name="test_op") as op:
+                op.progress()
+
+    def test_config_serialize_strOverriden(self):
+        # arrange
+        Operation.config(serializer=lambda op: "test")
+
+        # act
+        with Operation(name="test_op") as op:
+            pass
+
+        # assert
+        self.assertEqual(str(op), "test")
+
+    def test_config_serialize_serializerUsed(self):
+        # arrange
+        serializer_mock = Mock(return_value="test")
+        Operation.config(serializer=serializer_mock)
+
+        # act
+        with Operation(name="test_op") as op:
+            pass
+
+        # assert
+        serializer_mock.assert_called_once_with(op)

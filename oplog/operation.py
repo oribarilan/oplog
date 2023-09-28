@@ -8,7 +8,7 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, Optional, Type, List, Union
+from typing import Any, Dict, Iterable, Optional, Type, List, Union, Callable
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
@@ -24,6 +24,19 @@ active_operation_stack: ContextVar[List['Operation']] = (
 
 class Operation(AbstractContextManager):
     global_props: Dict[str, Any] = {}
+    _serializer: Optional[Callable[['Operation'], str]] = None
+
+    @classmethod
+    def config(cls, serializer: Callable[['Operation'], str]) -> None:
+        """
+        Configure global behavior of all operations.
+
+        :param serializer: A function that receives an operation
+        and returns a string, to be formatted where relevant.
+        :return:
+        """
+        # Any attributes that are set here should be cleaned in `factory_reset`
+        cls._serializer = serializer
 
     def __init__(self,
                  name: str,
@@ -87,6 +100,7 @@ class Operation(AbstractContextManager):
     @classmethod
     def factory_reset(cls) -> None:
         cls.global_props = {}
+        cls._serializer = None
 
     @classmethod
     def _get_caller_logger(cls) -> logging.Logger:
@@ -105,6 +119,14 @@ class Operation(AbstractContextManager):
             logger = logging.getLogger()
         return logger
 
+    def __str__(self):
+        if self._serializer:
+            return self.__class__._serializer(self)
+
+        msg = (f"{self.start_time_utc_str} ({self.duration_ms}ms): "
+               f"[{self.name} / {self.result}]")
+        return msg
+
     def __enter__(self) -> "Operation":
         self.start_time_utc = datetime.datetime.utcnow()
         # time format example: 2023-06-22 06:27:53.922633
@@ -121,7 +143,7 @@ class Operation(AbstractContextManager):
         if self._on_start:
             self._logger.log(
                 level=logging.INFO,
-                msg="oplog: operation start",
+                msg=str(self),
                 extra={"oplog": self}
             )
 
@@ -167,7 +189,7 @@ class Operation(AbstractContextManager):
 
         self._logger.log(
             level=level,
-            msg="oplog: operation exit",
+            msg=str(self),
             extra={"oplog": self}
         )
 
@@ -178,10 +200,10 @@ class Operation(AbstractContextManager):
         # in case an error was thrown in context
         return self.suppress
 
-    def __hash__(self):
+    def __hash__(self):  # pragma: no cover
         return hash(self.id)
 
-    def __eq__(self, other):
+    def __eq__(self, other):  # pragma: no cover
         if isinstance(other, Operation):
             return other.id == self.id
         return False
@@ -217,7 +239,7 @@ class Operation(AbstractContextManager):
             raise GlobalOperationPropertyAlreadyExistsException(prop_name=property_name)
         cls.global_props[property_name] = value
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return f"<Operation name={self.name}>"
 
     def progressable(self,
