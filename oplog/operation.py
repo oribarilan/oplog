@@ -203,7 +203,6 @@ class Operation(AbstractContextManager):
 
         if self._spinner is not None:
             self._spinner.terminate()
-            # self._spinner.clear_spinner()
             if self.parent_op is not None and self.parent_op._spinner is not None:
                 self.parent_op._spinner.resume()
 
@@ -277,9 +276,9 @@ class Operation(AbstractContextManager):
         else:
             raise AttributeError("Operation is not progressable")
 
-    def spinner(self, nesting_level: int = 0):
+    def spinner(self, nesting_level: int = 0, cycle: Optional[List[str]] = None):
         """
         A context manager that displays a spinner while the operation is running.
         """
-        self._spinner = Spinner(nesting_level=nesting_level)
+        self._spinner = Spinner(desc=self.name, nesting_level=nesting_level, cycle=cycle)
         return self
