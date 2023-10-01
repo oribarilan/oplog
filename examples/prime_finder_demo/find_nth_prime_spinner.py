@@ -18,14 +18,15 @@ from oplog.formatters import CsvOperationFormatter  # noqa: E402
 @click.command()
 @click.argument('n', default=10, type=int)
 def find_nth_prime(n: int) -> None:
-    with Operation(name='op1').spinnable():
+    with Operation(name="op1").spinnable():
         time.sleep(2)
         with Operation(name="op2").spinnable():
             time.sleep(2)
             with Operation(name="op3").spinnable():
                 time.sleep(2)
-            time.sleep(3)
-        time.sleep(3)
+            time.sleep(2)
+        time.sleep(1)
+
 
 
 if __name__ == '__main__':

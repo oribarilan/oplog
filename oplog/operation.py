@@ -283,7 +283,7 @@ class Operation(AbstractContextManager):
         self._progress = OperationProgress(
             iterations=iterations,
             pbar_descriptor=self.name if with_pbar else None,
-            nest_level=self.get_num_displaying_ancestors()
+            nest_level=self.get_num_displaying_ancestors(),
         )
         return self
 
@@ -305,8 +305,25 @@ class Operation(AbstractContextManager):
         if self.is_displaying():
             raise OperationIsAlreadyDisplayingException(op=self)
 
+        cursor_offset = self.compute_cursor_offset()
+
         self._spinner = Spinner(desc=self.name,
-                                nest_level=self.get_num_displaying_ancestors(),
                                 cycle=cycle,
-                                disable=disable)
+                                disable=disable,
+                                total_nest_level=self.get_num_displaying_ancestors(),
+                                cursor_offset=cursor_offset)
         return self
+
+    def compute_cursor_offset(self) -> int:
+        # tqdm assumes that the cursor is at the first line
+        # spinner assumes that the cursor is at last line
+        cursor_offset = 0
+        if self.parent_op and self.parent_op.is_displaying():
+            if self.parent_op._spinner is not None:
+                # parent is spinner, move one down
+                cursor_offset = 1
+            elif self.parent_op._progress is not None and self.parent_op._progress.is_displaying():
+                # parent is tqdm, move # of displaying ancestors down
+                cursor_offset = len([op._progress for op in active_operation_stack.get() if op.is_displaying()])
+
+        return cursor_offset

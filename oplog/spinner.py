@@ -12,7 +12,8 @@ class Spinner:
                  disable: bool = False,
                  cycle: List[str] = None,
                  cycle_template: Optional[str] = None,
-                 nest_level: int = 0,
+                 total_nest_level: int = 0,
+                 cursor_offset: int = 0,
                  interval: Optional[float] = None):
         """
         A spinner that can be displayed in the terminal, and supports nesting.
@@ -21,10 +22,10 @@ class Spinner:
         :param cycle: Optional. the spinner frames to cycle through, list of strings. If none, default to a template.
         :param cycle_template: Optional. a template for the spinner frames. If none, defaults to a default template.
         :param interval: Optional. interval (ms) between spinner frames. If none, defaults according to the template.
-        :param nest_level:  nesting level of the spinner, defaults to 0 (root level, no nesting).
         """
+        self.cursor_offset = cursor_offset
+        self.total_nest_level = total_nest_level
         self.desc = desc
-        self.nesting_level = nest_level
         self.disable = disable
         self.stream = sys.stderr
         self.stop_running: Optional[threading.Event] = None
@@ -42,19 +43,26 @@ class Spinner:
             cycle_obj = templates["arrow3"]
 
         cycle, interval = cycle_obj["frames"], cycle_obj["interval"]
-        cycle = [f"{self._format_desc(desc=desc, nesting_level=nest_level)} {c}" for c in cycle]
+
+        cycle = [f"{self._format_desc(desc=desc, nesting_level=self.total_nest_level)} {c}" for c in cycle]
         self.spinner_cycle = itertools.cycle(cycle)
         self.interval = interval / 1000
 
     def _move_cursor_up(self, n):
         self.stream.write('\033[%dA' % n)
 
+    def move_cursor_to_top(self):
+        if not self.disable:
+            if self.stream.isatty():
+                self.stream.write("\x1b[H")  # Move cursor to the top-left corner
+                self.stream.flush()
+
     def start(self):
         if self.disable:
             return
         if self.stream.isatty():
-            if self.nesting_level > 0:
-                self.stream.write('\n')
+            if self.total_nest_level > 0:
+                self.stream.write('\n' * (self.cursor_offset))
             self.stop_running = threading.Event()
             self.spin_thread = threading.Thread(target=self._spin)
             self.spin_thread.start()
@@ -75,8 +83,8 @@ class Spinner:
                 self.stream.write(' ' * len(next(self.spinner_cycle)))
                 self.stream.write('\b' * len(next(self.spinner_cycle)))
                 self.stream.flush()
-        if self.nesting_level > 0:
-            self._move_cursor_up(1)
+        if self.total_nest_level > 0:
+            self._move_cursor_up(self.cursor_offset)
 
     def _spin(self):
         while not self.stop_running.is_set():
