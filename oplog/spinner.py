@@ -1,32 +1,50 @@
 import itertools
 import sys
 import threading
-import time
+from typing import List, Optional
+
+from oplog.spinner_templates import templates
 
 
 class Spinner:
-    def __init__(self, desc: str, disable=False, cycle=None, nest_level=0):
+    def __init__(self,
+                 desc: str,
+                 disable: bool = False,
+                 cycle: List[str] = None,
+                 cycle_template: Optional[str] = None,
+                 nest_level: int = 0,
+                 interval: Optional[float] = None):
+        """
+        A spinner that can be displayed in the terminal, and supports nesting.
+        :param desc: a prefix to the spinner
+        :param disable: if True, the spinner will not be displayed
+        :param cycle: Optional. the spinner frames to cycle through, list of strings. If none, default to a template.
+        :param cycle_template: Optional. a template for the spinner frames. If none, defaults to a default template.
+        :param interval: Optional. interval (ms) between spinner frames. If none, defaults according to the template.
+        :param nest_level:  nesting level of the spinner, defaults to 0 (root level, no nesting).
+        """
         self.desc = desc
         self.nesting_level = nest_level
-        _cycle = cycle or [
-            "( ●    )",
-            "(  ●   )",
-            "(   ●  )",
-            "(    ● )",
-            "(     ●)",
-            "(    ● )",
-            "(   ●  )",
-            "(  ●   )",
-            "( ●    )",
-            "(●     )"
-        ]
-        _cycle = [f"{self._format_desc(desc=desc, nesting_level=nest_level)}: {c}" for c in _cycle]
-        self.spinner_cycle = itertools.cycle(_cycle)
         self.disable = disable
         self.stream = sys.stderr
-        self.stop_running = None
-        self.spin_thread = None
+        self.stop_running: Optional[threading.Event] = None
+        self.spin_thread: Optional[threading.Thread] = None
         self.paused = False
+
+        cycle_obj = None
+        if cycle is not None:
+            cycle_obj = {"frames": cycle, "interval": interval or 250}
+
+        if cycle_template:
+            cycle_obj = templates.get(cycle_template, None)
+
+        if cycle_obj is None:
+            cycle_obj = templates["arrow3"]
+
+        cycle, interval = cycle_obj["frames"], cycle_obj["interval"]
+        cycle = [f"{self._format_desc(desc=desc, nesting_level=nest_level)} {c}" for c in cycle]
+        self.spinner_cycle = itertools.cycle(cycle)
+        self.interval = interval / 1000
 
     def _move_cursor_up(self, n):
         self.stream.write('\033[%dA' % n)
@@ -53,7 +71,7 @@ class Spinner:
         if self.spin_thread:
             self.stop_running.set()
             self.spin_thread.join()
-            if self.stream.isatty() or self.force:
+            if self.stream.isatty():
                 self.stream.write(' ' * len(next(self.spinner_cycle)))
                 self.stream.write('\b' * len(next(self.spinner_cycle)))
                 self.stream.flush()
@@ -66,11 +84,11 @@ class Spinner:
                 content_to_stream = next(self.spinner_cycle)
                 self.stream.write(content_to_stream)
                 self.stream.flush()
-                self.stop_running.wait(0.25)
+                self.stop_running.wait(self.interval)
                 self.stream.write('\b' * len(content_to_stream))
                 self.stream.flush()
             else:
-                self.stop_running.wait(0.25)
+                self.stop_running.wait(self.interval)
 
     @staticmethod
     def _format_desc(desc: str, nesting_level: int):

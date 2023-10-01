@@ -1,4 +1,3 @@
-import contextlib
 import datetime
 import inspect
 import logging
@@ -13,7 +12,7 @@ from typing import Any, Dict, Iterable, Optional, Type, List, Union, Callable
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
-    OperationPropertyAlreadyExistsException
+    OperationPropertyAlreadyExistsException, OperationIsAlreadyDisplayingException
 )
 from oplog.operation_progress import OperationProgress
 from oplog.operation_step import OperationStep
@@ -269,6 +268,18 @@ class Operation(AbstractContextManager):
     def progressable(self,
                      iterations: Optional[Union[int, float]] = None,
                      with_pbar: bool = True) -> 'Operation':
+        """
+        Context manager extension that makes the operation progress-able.
+        This adds progress properties to the operation,
+        and also (optionally) displays a progress bar.
+        Progress is reported using the `.progress()` method.
+        :param iterations: Optional. estimated number of iterations, if known
+        :param with_pbar: if True, a progress bar will be displayed.
+        :return:
+        """
+        if self.is_displaying():
+            raise OperationIsAlreadyDisplayingException(op=self)
+
         self._progress = OperationProgress(
             iterations=iterations,
             pbar_descriptor=self.name if with_pbar else None,
@@ -285,11 +296,17 @@ class Operation(AbstractContextManager):
         else:
             raise AttributeError("Operation is not progressable")
 
-    def spinner(self, cycle: Optional[List[str]] = None):
+    def spinnable(self, disable: bool = False, cycle: Optional[List[str]] = None):
         """
         A context manager that displays a spinner while the operation is running.
+        :param disable: if True, the spinner will not be displayed.
+        :param cycle: a list of strings, each representing a spinner frame.
         """
+        if self.is_displaying():
+            raise OperationIsAlreadyDisplayingException(op=self)
+
         self._spinner = Spinner(desc=self.name,
                                 nest_level=self.get_num_displaying_ancestors(),
-                                cycle=cycle)
+                                cycle=cycle,
+                                disable=disable)
         return self
