@@ -13,7 +13,7 @@ class OperationProgress:
     def __init__(self,
                  iterations: Optional[Union[int, float]] = None,
                  pbar_descriptor: Optional[str] = None,
-                 ancestors_progress: Optional[Iterable['OperationProgress']] = None,
+                 nest_level: int = 0,
                  ):
         """
         An extension that makes the operation progress-able,
@@ -25,24 +25,21 @@ class OperationProgress:
         self.iterations = iterations
         self.completion_ratio: Optional[float] = 0.0
 
-        ancestors_progress = ancestors_progress or []
         if pbar_descriptor:
-            num_ancestors_pbar = len([
-                p for p in ancestors_progress if p._pbar is not None
-            ])
-            indent_pbar_desc = self._format_pbar(pbar_descriptor, num_ancestors_pbar)
+            indent_pbar_desc = self._format_pbar(pbar_descriptor, nest_level)
             pbar: Optional[tqdm] = tqdm(
                 total=iterations,
                 desc=indent_pbar_desc,
                 # only keep progress bar of root-level operations
-                leave=num_ancestors_pbar == 0
+                leave=nest_level == 0
             )
         else:
             pbar = None
 
         self._pbar: Optional[tqdm] = pbar
 
-    def _format_pbar(self, pbar_descriptor: str, nesting_level: int):
+    @staticmethod
+    def _format_pbar(pbar_descriptor: str, nesting_level: int):
         indentation = "│   " * nesting_level
         formatted_line = f"{indentation}├── {pbar_descriptor}"
         return formatted_line
@@ -74,3 +71,6 @@ class OperationProgress:
         elif self.iterations is None:
             # unknown progress
             self.completion_ratio = None
+
+    def is_displaying(self):
+        return self._pbar is not None

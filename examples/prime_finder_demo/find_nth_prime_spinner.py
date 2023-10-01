@@ -20,12 +20,13 @@ from oplog.formatters import CsvOperationFormatter  # noqa: E402
 def find_nth_prime(n: int) -> None:
     with Operation(name='op1').spinner():
         time.sleep(2)
-        with Operation(name="op2").spinner(nesting_level=1):
+        with Operation(name="op2").spinner():
             time.sleep(2)
-            with Operation(name="op3").spinner(nesting_level=2):
+            with Operation(name="op3").spinner():
                 time.sleep(2)
             time.sleep(3)
         time.sleep(3)
+
 
 if __name__ == '__main__':
     find_nth_prime()

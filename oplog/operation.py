@@ -100,6 +100,17 @@ class Operation(AbstractContextManager):
         self._progress: Optional[OperationProgress] = None
         self._spinner: Optional[Spinner] = None
 
+    def is_displaying(self) -> bool:
+        has_pbar = self._progress is not None and self._progress.is_displaying()
+        has_spinner = self._spinner is not None
+        return has_pbar or has_spinner
+
+    @staticmethod
+    def get_num_displaying_ancestors() -> int:
+        displaying_ancestors = [op._progress for op in active_operation_stack.get()
+                                if op.is_displaying()]
+        return len(displaying_ancestors)
+
     @classmethod
     def factory_reset(cls) -> None:
         cls.global_props = {}
@@ -258,12 +269,10 @@ class Operation(AbstractContextManager):
     def progressable(self,
                      iterations: Optional[Union[int, float]] = None,
                      with_pbar: bool = True) -> 'Operation':
-        parent_op_progress_stack = (op._progress for op in active_operation_stack.get()
-                                    if op._progress is not None)
         self._progress = OperationProgress(
             iterations=iterations,
             pbar_descriptor=self.name if with_pbar else None,
-            ancestors_progress=parent_op_progress_stack
+            nest_level=self.get_num_displaying_ancestors()
         )
         return self
 
@@ -276,9 +285,11 @@ class Operation(AbstractContextManager):
         else:
             raise AttributeError("Operation is not progressable")
 
-    def spinner(self, nesting_level: int = 0, cycle: Optional[List[str]] = None):
+    def spinner(self, cycle: Optional[List[str]] = None):
         """
         A context manager that displays a spinner while the operation is running.
         """
-        self._spinner = Spinner(desc=self.name, nesting_level=nesting_level, cycle=cycle)
+        self._spinner = Spinner(desc=self.name,
+                                nest_level=self.get_num_displaying_ancestors(),
+                                cycle=cycle)
         return self
