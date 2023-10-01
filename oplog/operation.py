@@ -1,4 +1,4 @@
-from contextvars import ContextVar
+import contextlib
 import datetime
 import inspect
 import logging
@@ -8,6 +8,7 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
+from contextvars import ContextVar
 from typing import Any, Dict, Iterable, Optional, Type, List, Union, Callable
 
 from oplog.exceptions import (
@@ -16,6 +17,7 @@ from oplog.exceptions import (
 )
 from oplog.operation_progress import OperationProgress
 from oplog.operation_step import OperationStep
+from oplog.spinner import Spinner
 
 active_operation_stack: ContextVar[List['Operation']] = (
     ContextVar("active_operation_stack", default=[])
@@ -96,6 +98,7 @@ class Operation(AbstractContextManager):
 
         # extension - progress
         self._progress: Optional[OperationProgress] = None
+        self._spinner: Optional[Spinner] = None
 
     @classmethod
     def factory_reset(cls) -> None:
@@ -128,6 +131,11 @@ class Operation(AbstractContextManager):
         return msg
 
     def __enter__(self) -> "Operation":
+        if self._spinner is not None:
+            if self.parent_op is not None and self.parent_op._spinner is not None:
+                self.parent_op._spinner.pause()
+            self._spinner.start()
+
         self.start_time_utc = datetime.datetime.utcnow()
         # time format example: 2023-06-22 06:27:53.922633
         self.start_time_utc_str = self.start_time_utc.strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -192,6 +200,12 @@ class Operation(AbstractContextManager):
             msg=str(self),
             extra={"oplog": self}
         )
+
+        if self._spinner is not None:
+            self._spinner.terminate()
+            # self._spinner.clear_spinner()
+            if self.parent_op is not None and self.parent_op._spinner is not None:
+                self.parent_op._spinner.resume()
 
         if self._progress is not None:
             self._progress.exit(is_successful=self.is_successful)
@@ -262,3 +276,10 @@ class Operation(AbstractContextManager):
             self._progress.progress(n)
         else:
             raise AttributeError("Operation is not progressable")
+
+    def spinner(self, nesting_level: int = 0):
+        """
+        A context manager that displays a spinner while the operation is running.
+        """
+        self._spinner = Spinner(nesting_level=nesting_level)
+        return self
