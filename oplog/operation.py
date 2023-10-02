@@ -2,6 +2,7 @@ import datetime
 import inspect
 import logging
 import multiprocessing
+import sys
 import threading
 import time
 import traceback
@@ -141,9 +142,13 @@ class Operation(AbstractContextManager):
         return msg
 
     def __enter__(self) -> "Operation":
-        if self._spinner is not None:
+        if self.is_displaying():
             if self.parent_op is not None and self.parent_op._spinner is not None:
+                # if spinner with spinner-parent, pause spinner-parent
                 self.parent_op._spinner.pause()
+
+        if self._spinner is not None:
+            # start spinner
             self._spinner.start()
 
         self.start_time_utc = datetime.datetime.utcnow()
@@ -213,8 +218,15 @@ class Operation(AbstractContextManager):
 
         if self._spinner is not None:
             self._spinner.terminate()
-            if self.parent_op is not None and self.parent_op._spinner is not None:
-                self.parent_op._spinner.resume()
+            if self.parent_op is not None:
+                if self.parent_op._spinner is not None:
+                    # if spinner with spinner-parent, resume spinner-parent
+                    self.parent_op._spinner.resume()
+                elif self.parent_op._progress is not None:
+                    if self.parent_op._progress.is_displaying():
+                        # if spinner with pbar-parent, refresh pbar-parent
+                        # sys.stderr.write(f"\033[{self.get_num_displaying_ancestors()}A")
+                        pass
 
         if self._progress is not None:
             self._progress.exit(is_successful=self.is_successful)
