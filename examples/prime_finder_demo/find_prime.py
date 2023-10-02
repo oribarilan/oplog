@@ -43,7 +43,7 @@ def is_prime(num):
 
 @click.command()
 @click.argument('n', default=10, type=int)
-def find_nth_prime(n: int) -> None:
+def find_prime(n: int) -> None:
     with Operation(name='find_prime').progressable(iterations=n) as op:
         prime_count = 0
         candidate = 1
@@ -56,4 +56,4 @@ def find_nth_prime(n: int) -> None:
 
 
 if __name__ == '__main__':
-    find_nth_prime()
+    find_prime()
