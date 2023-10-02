@@ -1,19 +1,27 @@
+import os
+import sys
 import time
 
 import click
 
-from oplog import Operation
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the path to the repository root directory (one level up)
+repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
+
+# Add the repository root directory to the Python path
+sys.path.append(repository_root)
+
+from oplog import Operation  # noqa: E402
 
 
 def modulo(dividend, divisor):
-    with Operation(name='modulo').progressable(iterations=dividend) as op:
+    with Operation(name='modulo').spinnable():
         if divisor == 0:
             raise ZeroDivisionError()
 
         remainder = dividend
         while remainder >= divisor:
-            time.sleep(remainder/divisor * 0.1)
-            op.progress()
+            time.sleep(0.5)
             remainder -= divisor
 
         return remainder

@@ -142,13 +142,10 @@ class Operation(AbstractContextManager):
         return msg
 
     def __enter__(self) -> "Operation":
-        if self.is_displaying():
-            if self.parent_op is not None and self.parent_op._spinner is not None:
-                # if spinner with spinner-parent, pause spinner-parent
-                self.parent_op._spinner.pause()
+        if self.parent_op is not None:
+            self.parent_op._displaying_pause()
 
         if self._spinner is not None:
-            # start spinner
             self._spinner.start()
 
         self.start_time_utc = datetime.datetime.utcnow()
@@ -210,26 +207,19 @@ class Operation(AbstractContextManager):
         level = logging.INFO if is_success else logging.ERROR
         self.log_level = logging.getLevelName(level)
 
+        if self._progress is not None:
+            self._progress.exit(is_successful=self.is_successful)
+
+        if self._spinner is not None:
+            self._spinner.terminate()
+            if self.parent_op is not None:
+                self.parent_op._displaying_resume()
+
         self._logger.log(
             level=level,
             msg=str(self),
             extra={"oplog": self}
         )
-
-        if self._spinner is not None:
-            self._spinner.terminate()
-            if self.parent_op is not None:
-                if self.parent_op._spinner is not None:
-                    # if spinner with spinner-parent, resume spinner-parent
-                    self.parent_op._spinner.resume()
-                elif self.parent_op._progress is not None:
-                    if self.parent_op._progress.is_displaying():
-                        # if spinner with pbar-parent, refresh pbar-parent
-                        # sys.stderr.write(f"\033[{self.get_num_displaying_ancestors()}A")
-                        pass
-
-        if self._progress is not None:
-            self._progress.exit(is_successful=self.is_successful)
 
         # this will either suppress (if configured) or no,
         # in case an error was thrown in context
@@ -339,3 +329,13 @@ class Operation(AbstractContextManager):
                 cursor_offset = len([op._progress for op in active_operation_stack.get() if op.is_displaying()])
 
         return cursor_offset
+
+    def _displaying_pause(self):
+        # pbar doesn't need to be paused, it will not progress naturally
+        if self._spinner is not None:
+            self._spinner.pause()
+
+    def _displaying_resume(self):
+        # pbar doesn't need to be resumed, it will progress naturally
+        if self._spinner is not None:
+            self._spinner.resume()

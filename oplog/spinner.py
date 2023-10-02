@@ -40,7 +40,7 @@ class Spinner:
             cycle_obj = templates.get(cycle_template, None)
 
         if cycle_obj is None:
-            cycle_obj = templates["arrow3"]
+            cycle_obj = templates["dots"]
 
         cycle, interval = cycle_obj["frames"], cycle_obj["interval"]
 
