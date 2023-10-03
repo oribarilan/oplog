@@ -10,7 +10,7 @@ repository_root = os.path.abspath(os.path.join(current_dir, "..", ".."))
 sys.path.append(repository_root)
 
 
-from examples.fluent_calculator_demo.main import FluentCalculator  # noqa: E402
+from examples.fluent_calculator_demo.calc import FluentCalculator  # noqa: E402
 
 
 @pytest.fixture

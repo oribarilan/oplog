@@ -25,9 +25,9 @@ quality:
 
 # execute all code checks (linting and quality)
 check:
-    -just lint
-    -just quality
-    -just test-coverage
+    just lint
+    just quality
+    just test-coverage
 
 # build and run docs
 docs:

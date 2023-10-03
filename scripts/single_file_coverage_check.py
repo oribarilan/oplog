@@ -35,7 +35,10 @@ failed_files = []
 
 for class_element in root.findall('.//class[@filename]'):
     filename = class_element.get('filename')
-    line_rate = float(class_element.get('line-rate'))
+    line_rate_str = class_element.get('line-rate')
+    if line_rate_str is None:
+        raise AttributeError(f'line-rate attribute not found for file {filename}')
+    line_rate = float(line_rate_str)
 
     if line_rate < threshold:
         failed_files.append((filename, line_rate))

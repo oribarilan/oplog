@@ -2,7 +2,6 @@ import datetime
 import inspect
 import logging
 import multiprocessing
-import sys
 import threading
 import time
 import traceback
@@ -324,9 +323,11 @@ class Operation(AbstractContextManager):
             if self.parent_op._spinner is not None:
                 # parent is spinner, move one down
                 cursor_offset = 1
-            elif self.parent_op._progress is not None and self.parent_op._progress.is_displaying():
+            elif (self.parent_op._progress is not None and
+                  self.parent_op._progress.is_displaying()):
                 # parent is tqdm, move # of displaying ancestors down
-                cursor_offset = len([op._progress for op in active_operation_stack.get() if op.is_displaying()])
+                cursor_offset = len([op._progress for op in active_operation_stack.get()
+                                     if op.is_displaying()])
 
         return cursor_offset
 

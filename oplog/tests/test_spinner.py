@@ -14,7 +14,9 @@ class TestSpinner(unittest.TestCase):
         time.sleep(0.5)
 
         for frame in cycle:
-            self.assertTrue(call(f'|── desc:     {frame}') in mock_stderr.write.call_args_list)
+            self.assertTrue(
+                call(f'|── desc:     {frame}') in mock_stderr.write.call_args_list
+            )
 
         spinner.terminate()
 

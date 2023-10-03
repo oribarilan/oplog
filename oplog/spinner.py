@@ -1,7 +1,7 @@
 import itertools
 import sys
 import threading
-from typing import List, Optional
+from typing import List, Optional, Dict
 
 from oplog.spinner_templates import templates
 
@@ -10,18 +10,21 @@ class Spinner:
     def __init__(self,
                  desc: str,
                  disable: bool = False,
-                 cycle: List[str] = None,
+                 cycle: Optional[List[str]] = None,
                  cycle_template: Optional[str] = None,
                  total_nest_level: int = 0,
                  cursor_offset: int = 0,
-                 interval: Optional[float] = None):
+                 interval: Optional[int] = None):
         """
         A spinner that can be displayed in the terminal, and supports nesting.
         :param desc: a prefix to the spinner
         :param disable: if True, the spinner will not be displayed
-        :param cycle: Optional. the spinner frames to cycle through, list of strings. If none, default to a template.
-        :param cycle_template: Optional. a template for the spinner frames. If none, defaults to a default template.
-        :param interval: Optional. interval (ms) between spinner frames. If none, defaults according to the template.
+        :param cycle: Optional. the spinner frames to cycle through,
+            list of strings. If none, default to a template.
+        :param cycle_template: Optional. a template for the spinner frames.
+            If none, defaults to a default template.
+        :param interval: Optional. interval (ms) between spinner frames.
+            If none, defaults according to the template.
         """
         self.cursor_offset = cursor_offset
         self.total_nest_level = total_nest_level
@@ -32,7 +35,7 @@ class Spinner:
         self.spin_thread: Optional[threading.Thread] = None
         self.paused = False
 
-        cycle_obj = None
+        cycle_obj: Optional[Dict] = None
         if cycle is not None:
             cycle_obj = {"frames": cycle, "interval": interval or 250}
 
@@ -43,8 +46,12 @@ class Spinner:
             cycle_obj = templates["dots"]
 
         cycle, interval = cycle_obj["frames"], cycle_obj["interval"]
+        assert isinstance(interval, int), "interval must be an integer"
 
-        cycle = [f"{self._format_desc(desc=desc, nesting_level=self.total_nest_level)} {c}" for c in cycle]
+        cycle = [
+            f"{self._format_desc(desc=desc, nesting_level=self.total_nest_level)} {c}"
+            for c in cycle
+        ]
         self.spinner_cycle = itertools.cycle(cycle)
         self.interval = interval / 1000
 

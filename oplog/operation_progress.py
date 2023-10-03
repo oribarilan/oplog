@@ -1,4 +1,4 @@
-from typing import Optional, Final, Iterable, Union
+from typing import Optional, Final, Union
 
 from tqdm.auto import tqdm
 
