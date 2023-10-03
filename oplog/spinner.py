@@ -51,12 +51,6 @@ class Spinner:
     def _move_cursor_up(self, n):
         self.stream.write('\033[%dA' % n)
 
-    def move_cursor_to_top(self):
-        if not self.disable:
-            if self.stream.isatty():
-                self.stream.write("\x1b[H")  # Move cursor to the top-left corner
-                self.stream.flush()
-
     def start(self):
         if self.disable:
             return
