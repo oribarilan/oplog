@@ -1,11 +1,11 @@
-name: Build and Deploy Docs 
+name: Build and Deploy Docs
 # on:
 #   release:
 #     types: [published]
 on:
   push:
     branches:
-      - master 
+      - master
       - main
 permissions:
   contents: write
@@ -24,3 +24,4 @@ jobs:
       - run: pip install mkdocs-material
       - run: pip install mkdocs-awesome-pages-plugin
       - run: mkdocs gh-deploy --force
+
