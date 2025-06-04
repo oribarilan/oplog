@@ -8,13 +8,12 @@ import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
-from typing import Any, Dict, Iterable, Optional, Type, List, Union, Callable
+from typing import Any, Dict, Iterable, Optional, Type, List, Callable
 
 from oplog.exceptions import (
     GlobalOperationPropertyAlreadyExistsException,
     OperationPropertyAlreadyExistsException
 )
-from oplog.operation_progress import OperationProgress
 from oplog.operation_step import OperationStep
 
 active_operation_stack: ContextVar[List['Operation']] = (
@@ -94,8 +93,6 @@ class Operation(AbstractContextManager):
 
         self._perf_start: Optional[float] = None
 
-        # extension - progress
-        self._progress: Optional[OperationProgress] = None
 
     @classmethod
     def factory_reset(cls) -> None:
@@ -193,9 +190,6 @@ class Operation(AbstractContextManager):
             extra={"oplog": self}
         )
 
-        if self._progress is not None:
-            self._progress.exit(is_successful=self.is_successful)
-
         # this will either suppress (if configured) or no,
         # in case an error was thrown in context
         return self.suppress
@@ -242,23 +236,3 @@ class Operation(AbstractContextManager):
     def __repr__(self):  # pragma: no cover
         return f"<Operation name={self.name}>"
 
-    def progressable(self,
-                     iterations: Optional[Union[int, float]] = None,
-                     with_pbar: bool = True) -> 'Operation':
-        parent_op_progress_stack = (op._progress for op in active_operation_stack.get()
-                                    if op._progress is not None)
-        self._progress = OperationProgress(
-            iterations=iterations,
-            pbar_descriptor=self.name if with_pbar else None,
-            ancestors_progress=parent_op_progress_stack
-        )
-        return self
-
-    def get_progress(self) -> Optional[OperationProgress]:
-        return self._progress
-
-    def progress(self, n: Union[int, float] = 1):
-        if self._progress is not None:
-            self._progress.progress(n)
-        else:
-            raise AttributeError("Operation is not progressable")
