@@ -275,11 +275,6 @@ class TestOperation(OpLogTestCase):
         except OperationExceptionTest:
             self.assertEqual(op.step, OperationStep.END)
 
-    def test_progress_isNotProgressable_errorRaised(self):
-        with self.assertRaises(AttributeError):
-            with Operation(name="test_op") as op:
-                op.progress()
-
     def test_config_serialize_strOverriden(self):
         # arrange
         Operation.config(serializer=lambda op: "test")

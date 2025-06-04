@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "op-log"
-version = "0.21.1"
+version = "0.22.0"
 description = "Easy-to-use context-rich Python logging library."
 readme = "README.md"
 authors = [{ name = "Ori Bar-ilan", email = "python.oplog@gmail.com" }]
@@ -16,7 +16,6 @@ classifiers = [
 ]
 keywords = ["oplog", "logging", "logger"]
 dependencies = [
-    "tqdm==4.66.1"
 ]
 requires-python = ">=3.9"
 
