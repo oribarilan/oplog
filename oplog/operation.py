@@ -24,18 +24,20 @@ active_operation_stack: ContextVar[List['Operation']] = (
 class Operation(AbstractContextManager):
     global_props: Dict[str, Any] = {}
     _serializer: Optional[Callable[['Operation'], str]] = None
+    _logger_name: Optional[str] = None
 
     @classmethod
-    def config(cls, serializer: Callable[['Operation'], str]) -> None:
+    def config(cls, logger_name: str | None = None, serializer: Callable[['Operation'], str] | None = None) -> None:
         """
         Configure global behavior of all operations.
 
-        :param serializer: A function that receives an operation
+        :param serializer: Optional. A function that receives an operation
         and returns a string, to be formatted where relevant.
-        :return:
+        :param logger_name: Optional. Will be used to fetch the named logger that will handle the operation logs.
         """
         # Any attributes that are set here should be cleaned in `factory_reset`
         cls._serializer = serializer
+        cls._logger_name = logger_name
 
     def __init__(self,
                  name: str,
@@ -98,26 +100,33 @@ class Operation(AbstractContextManager):
     def factory_reset(cls) -> None:
         cls.global_props = {}
         cls._serializer = None
+        cls._logger_name = None
 
     @classmethod
     def _get_caller_logger(cls) -> logging.Logger:
         logger = None
-        stack = inspect.stack()
-        if len(stack) >= 3:
-            # the caller is the 3rd frame in the stack
-            caller_frame = stack[2]
-            if len(caller_frame) >= 1:
-                # the caller module is the 1st element in the caller frame
-                caller_module = inspect.getmodule(caller_frame[0])
-                if caller_module is not None:
-                    logger = logging.getLogger(caller_module.__name__)
+        if cls._logger_name is not None:
+            logger = logging.getLogger(cls._logger_name)
+        else:
+            # try fetching the caller logger
+            stack = inspect.stack()
+            if len(stack) >= 3:
+                # the caller is the 3rd frame in the stack
+                caller_frame = stack[2]
+                if len(caller_frame) >= 1:
+                    # the caller module is the 1st element in the caller frame
+                    caller_module = inspect.getmodule(caller_frame[0])
+                    if caller_module is not None:
+                        logger = logging.getLogger(caller_module.__name__)
 
-        if logger is None:
-            logger = logging.getLogger()
+            if logger is None:
+                # could not fetch the caller logger, using the root logger
+                logger = logging.getLogger()
+
         return logger
 
     def __str__(self):
-        if self._serializer:
+        if self._serializer is not None:
             return self.__class__._serializer(self)
 
         msg = (f"{self.start_time_utc_str} ({self.duration_ms}ms): "
