@@ -27,7 +27,7 @@ class Operation(AbstractContextManager):
     _logger_name: Optional[str] = None
 
     @classmethod
-    def config(cls, logger_name: str | None = None, serializer: Callable[['Operation'], str] | None = None) -> None:
+    def config(cls, logger_name: Optional[str] = None, serializer: Optional[Callable[['Operation'], str]] = None) -> None:
         """
         Configure global behavior of all operations.
 
