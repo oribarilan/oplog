@@ -297,3 +297,38 @@ class TestOperation(OpLogTestCase):
 
         # assert
         serializer_mock.assert_called_once_with(op)
+
+    def test_config_logger_name_usesNamedLogger(self):
+        # arrange
+        logger_name = "uvicorn.error"
+        expected_logger = logging.getLogger(logger_name)
+        Operation.config(logger_name=logger_name)
+
+        # act
+        with Operation(name="test_op") as op:
+            pass
+
+        # assert
+        self.assertEqual(op._logger, expected_logger)
+        self.assertEqual(op.logger_name, logger_name)
+
+    @patch('logging.getLogger')
+    def test_config_logger_name_logsWithNamedLogger(self, mock_get_logger):
+        # arrange
+        logger_name = "uvicorn.error"
+        mock_logger = Mock()
+        mock_get_logger.return_value = mock_logger
+        Operation.config(logger_name=logger_name)
+
+        # act
+        with Operation(name="test_op") as op:
+            pass
+
+        # assert
+        mock_get_logger.assert_called_with(logger_name)
+        mock_logger.log.assert_called_once_with(
+            level=logging.INFO,
+            msg=str(op),
+            extra={"oplog": op}
+        )
+
